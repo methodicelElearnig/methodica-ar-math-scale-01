@@ -1,0 +1,1559 @@
+﻿'use strict';
+
+
+
+
+var TOTAL_SCREENS = 9;
+window.lomdaState = { selectedCharacter: null, selectedDesign: null };
+/* Read through the shared getter: from v4 the Kata state document is the source of truth for
+   the character and localStorage is only a synchronous cache (unit-js/40-resume.js). This runs
+   before the first paint, while the document is still two CDN scripts away, so the cache is
+   what the getter returns here — the document overrides it in loader phase A.
+   typeof-guarded so a shared file that failed to load degrades to the old cache-only
+   behaviour rather than throwing at top level and killing the rest of this script. */
+const _savedChar = (typeof getUnitCharacter === 'function')
+  ? getUnitCharacter()
+  : localStorage.getItem('lomdaCharacter');
+if (_savedChar) window.lomdaState.selectedCharacter = _savedChar;
+
+/* Final assessment tracking (screens 43-52) */
+let finalAssessmentScore = { correct: 0 };
+
+let frcRevealed = [false, false, false];
+let frcDone = false;
+
+let s4VideoEnded = false;
+let s4Playing = false;
+let s4Timer = null;
+
+let s7Timer = null;
+let s8Timer = null;
+
+
+
+
+function resetScreenState(n) {
+  if (n === 0) { s25Enter(); }
+  if (n === 1) { s26Enter(); }
+  if (n === 2) { s27Enter(); }
+  if (n === 3) { s28Enter(); }
+  if (n === 4) { s29Enter(); }
+  if (n === 5) { s30Enter(); }
+  if (n === 6) { s31Enter(); }
+  if (n === 7) { s32Enter(); }
+  if (n === 8) { s33Enter(); }
+}
+
+
+
+
+/* ── Screen 26 ── */
+var s26Solved    = false;
+var s26Correct   = false;
+var s26Attempts  = 0;
+var s26Vals = { 1: null, 2: null, 3: null };
+var S26_CORRECT = { 1: '5', 2: '1000', 3: '5000' };
+
+function s26Enter() {
+  updateNavBar(
+    document.querySelector('#s1 .s18-nav'), 1,
+    [null, null, null, null],
+    [1, 2, 3, 4]
+  );
+  s26Solved   = false;
+  s26Correct  = false;
+  s26Attempts = 0;
+  s26Vals = { 1: null, 2: null, 3: null };
+  [1, 2, 3].forEach(function(n) {
+    var valEl = document.getElementById('s26-val' + n);
+    var panel = document.getElementById('s26-panel' + n);
+    var wrap  = document.getElementById('s26-wrap' + n);
+    var trig  = wrap ? wrap.querySelector('.s5-dd-trigger') : null;
+    if (valEl)  valEl.textContent = '-';
+    if (panel)  panel.hidden = true;
+    if (wrap)   wrap.classList.remove('is-open', 'is-correct', 'is-incorrect');
+    if (trig)   trig.disabled = false;
+  });
+  var cont = document.getElementById('s26-continue');
+  if (cont) cont.disabled = true;
+  var fb = document.getElementById('s26-feedback');
+  if (fb) { fb.hidden = true; fb.classList.remove('s5-fb--correct', 's5-fb--incorrect'); }
+}
+
+function s26ToggleDd(n) {
+  if (s26Solved) return;
+  var wrap  = document.getElementById('s26-wrap' + n);
+  var panel = document.getElementById('s26-panel' + n);
+  if (!wrap || !panel) return;
+  var isOpen = wrap.classList.contains('is-open');
+  [1, 2, 3].forEach(function(i) {
+    var w = document.getElementById('s26-wrap' + i);
+    var p = document.getElementById('s26-panel' + i);
+    if (w) w.classList.remove('is-open');
+    if (p) p.hidden = true;
+  });
+  if (!isOpen) { wrap.classList.add('is-open'); panel.hidden = false; }
+}
+
+function s26ToggleHint() {
+  var popup = document.getElementById('s26-hint-popup');
+  if (popup) {
+    popup.hidden = false;
+    announce('التلميح يُفتَح');
+    xapiRequestedHint('001', 'q1');
+  }
+}
+
+function s26CloseHint() {
+  var popup = document.getElementById('s26-hint-popup');
+  if (popup) { popup.hidden = true; announce('التلميح يُغلَق'); }
+}
+
+function s26Pick(n, val, label) {
+  s26Vals[n] = val;
+  var valEl = document.getElementById('s26-val' + n);
+  if (valEl) valEl.textContent = label;
+  var wrap  = document.getElementById('s26-wrap' + n);
+  var panel = document.getElementById('s26-panel' + n);
+  if (wrap)  wrap.classList.remove('is-open');
+  if (panel) panel.hidden = true;
+  var cont = document.getElementById('s26-continue');
+  if (cont) cont.disabled = !(s26Vals[1] && s26Vals[2] && s26Vals[3]);
+}
+
+function s26Submit() {
+  if (s26Solved) { goTo(2); return; }
+  if (!s26Vals[1] || !s26Vals[2] || !s26Vals[3]) return;
+
+  var correct = (s26Vals[1] === S26_CORRECT[1] && s26Vals[2] === S26_CORRECT[2] && s26Vals[3] === S26_CORRECT[3]);
+  xapiAnswered('001', 'q1', correct, correct || (s26Attempts + 1) >= 2,
+    [s26Vals[1], s26Vals[2], s26Vals[3]].join(' | '));
+  var labels  = { 1: '5', 2: '1,000', 3: '5,000' };
+
+  var fb      = document.getElementById('s26-feedback');
+  var fbBold  = document.getElementById('s26-fb-bold');
+  var fbReg   = document.getElementById('s26-fb-regular');
+  var cont    = document.getElementById('s26-continue');
+  var explanation = '1 سم في الخريطة يساوي 1,000 سم في الواقع.<br>لإيجاد طول المسار في الواقع، علينا ضرب المسافة في الخريطة، وهي 5 سم، بـ 1,000.';
+
+  fb.classList.remove('s5-fb--correct', 's5-fb--incorrect');
+
+  if (correct) {
+    s26Solved  = true;
+    s26Correct = true;
+    var checkIco26 = '<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="8" fill="#609E12"/><path d="M4.5 8.25L6.75 10.5L11.5 5.5" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    [1, 2, 3].forEach(function(n) {
+      var wrap   = document.getElementById('s26-wrap' + n);
+      var trig   = wrap ? wrap.querySelector('.s5-dd-trigger') : null;
+      var iconEl = document.getElementById('s26-dd-icon-' + n);
+      if (trig)   trig.disabled = true;
+      if (wrap)   wrap.classList.add('is-correct');
+      if (iconEl) iconEl.innerHTML = checkIco26;
+    });
+    fbBold.textContent = 'رائع!';
+    fbReg.innerHTML    = explanation;
+    fb.classList.add('s5-fb--correct');
+    fb.hidden     = false;
+    cont.textContent = 'متابعة';
+    cont.disabled = false;
+    announce('رائع!');
+  } else {
+    s26Attempts++;
+    if (s26Attempts === 1) {
+      s26Vals = { 1: null, 2: null, 3: null };
+      [1, 2, 3].forEach(function(n) {
+        var valEl = document.getElementById('s26-val' + n);
+        var wrap  = document.getElementById('s26-wrap' + n);
+        var iconEl = document.getElementById('s26-dd-icon-' + n);
+        if (valEl)  valEl.textContent = '-';
+        if (wrap)   wrap.classList.remove('is-open', 'is-correct', 'is-incorrect');
+        if (iconEl) iconEl.innerHTML = '';
+      });
+      cont.disabled = true;
+      fbBold.textContent = 'الإجابة غير دقيقة، هل نحاول مرة أخرى؟';
+      fbReg.innerHTML    = '';
+      fb.classList.add('s5-fb--incorrect');
+      fb.hidden = false;
+      announce('الإجابة غير دقيقة، هل نحاول مرة أخرى؟');
+    } else {
+      s26Solved = true;
+      var checkIco = '<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="8" fill="#609E12"/><path d="M4.5 8.25L6.75 10.5L11.5 5.5" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+      var xIco     = '<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="8" fill="#B20010"/><path d="M5.5 5.5L10.5 10.5M10.5 5.5L5.5 10.5" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+      [1, 2, 3].forEach(function(n) {
+        var valEl  = document.getElementById('s26-val' + n);
+        var wrap   = document.getElementById('s26-wrap' + n);
+        var trig   = wrap ? wrap.querySelector('.s5-dd-trigger') : null;
+        var iconEl = document.getElementById('s26-dd-icon-' + n);
+        if (trig)  trig.disabled = true;
+        if (valEl) valEl.textContent = labels[n];
+        var isOk = (s26Vals[n] === S26_CORRECT[n]);
+        if (wrap) {
+          if (isOk) { wrap.classList.remove('is-incorrect'); wrap.classList.add('is-correct'); }
+          else      { wrap.classList.remove('is-correct');   wrap.classList.add('is-incorrect'); }
+        }
+        if (iconEl) iconEl.innerHTML = isOk ? checkIco : xIco;
+      });
+      fbBold.textContent = 'هذا خطأ، لا بأس – تعالوا نتعلّم منه:';
+      announce('هذا خطأ، لا بأس – تعالوا نتعلّم منه:');
+      fbReg.innerHTML    = 'التمرين الصحيح معروض الآن.​<br>' + explanation;
+      fb.classList.add('s5-fb--incorrect');
+      fb.hidden     = false;
+      cont.textContent = 'متابعة';
+      cont.disabled = false;
+    }
+  }
+  /* Resume: commit the answer synchronously. A debounced save here could still be in flight when
+     the learner navigates, and land after the next screen's own write. */
+  flushResumeSave();
+}
+
+
+/* ── Screen 25 ── */
+function s25Enter() {
+  var charImg = document.getElementById('s25-char-img');
+  if (charImg) {
+    setImgSrc(charImg, window.lomdaState.selectedCharacter === 'text'
+      ? './assets/images/Character1.png'
+      : './assets/images/Character2.png');
+  }
+}
+
+
+/* ── Screen 27 ── */
+var s27Solved    = false;
+var s27Correct   = false;
+var s27Attempts  = 0;
+var s27Vals = { 1: null, 2: null };
+var S27_CORRECT = { 1: '35000', 2: '350' };
+
+function s27Enter() {
+  updateNavBar(
+    document.querySelector('#s2 .s18-nav'), 2,
+    [s26Solved ? (s26Correct ? 'correct' : 'wrong') : null, null, null, null],
+    [1, 2, 3, 4]
+  );
+  s27Solved    = false;
+  s27Correct   = false;
+  s27Attempts  = 0;
+  s27Vals = { 1: null, 2: null };
+
+  [1, 2].forEach(function(n) {
+    var valEl = document.getElementById('s27-val' + n);
+    var wrap  = document.getElementById('s27-wrap' + n);
+    var panel = document.getElementById('s27-panel' + n);
+    if (valEl)  valEl.textContent = '-';
+    if (wrap)   { wrap.classList.remove('is-correct', 'is-incorrect', 'is-open'); }
+    if (panel)  panel.hidden = true;
+  });
+
+  var fb   = document.getElementById('s27-feedback');
+  var cont = document.getElementById('s27-continue');
+  var hint = document.getElementById('s27-hint-popup');
+  if (fb)   { fb.hidden = true; fb.classList.remove('s5-fb--incorrect'); }
+  if (cont) { cont.disabled = true; cont.onclick = function() { s27Submit(); }; }
+  if (hint) hint.hidden = true;
+}
+
+function s27ToggleDd(n) {
+  if (s27Solved) return;
+  var panel  = document.getElementById('s27-panel' + n);
+  var wrap   = document.getElementById('s27-wrap' + n);
+  var isOpen = !panel.hidden;
+  [1, 2].forEach(function(i) {
+    var p = document.getElementById('s27-panel' + i);
+    var w = document.getElementById('s27-wrap' + i);
+    if (p) p.hidden = true;
+    if (w) w.classList.remove('is-open');
+  });
+  if (!isOpen) {
+    panel.hidden = false;
+    wrap.classList.add('is-open');
+  }
+}
+
+function s27Pick(n, val, label) {
+  s27Vals[n] = val;
+  var valEl = document.getElementById('s27-val' + n);
+  var panel = document.getElementById('s27-panel' + n);
+  var wrap  = document.getElementById('s27-wrap' + n);
+  if (valEl) valEl.textContent = label;
+  if (panel) panel.hidden = true;
+  if (wrap)  wrap.classList.remove('is-open');
+  var cont = document.getElementById('s27-continue');
+  if (cont)  cont.disabled = !(s27Vals[1] !== null && s27Vals[2] !== null);
+}
+
+function s27Submit() {
+  if (s27Solved) { goTo(3); return; }
+  if (s27Vals[1] === null || s27Vals[2] === null) return;
+
+  var fb     = document.getElementById('s27-feedback');
+  var fbBold = document.getElementById('s27-fb-bold');
+  var fbReg  = document.getElementById('s27-fb-regular');
+  var cont   = document.getElementById('s27-continue');
+
+  var explanation   = 'العملية مكوّنة من مرحلتين: <br>1. نضرب 7 سم بـ 5,000 لنحصل على المسافة في الواقع ونحصل على 35,000 سم. ​<br>2. لتحويل السنتيمترات إلى أمتار، نقسم على 100 فنحصل على 350 مترًا.';
+  var correctLabels = { 1: '35,000', 2: '350' };
+  var isCorrect     = s27Vals[1] === S27_CORRECT[1] && s27Vals[2] === S27_CORRECT[2];
+  xapiAnswered('002', 'q1', isCorrect, isCorrect || (s27Attempts + 1) >= 2,
+    [s27Vals[1], s27Vals[2]].join(' | '));
+
+  fb.classList.remove('s5-fb--correct', 's5-fb--incorrect');
+
+  if (isCorrect) {
+    s27Solved  = true;
+    s27Correct = true;
+    var checkIco27 = '<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="8" fill="#609E12"/><path d="M4.5 8.25L6.75 10.5L11.5 5.5" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    [1, 2].forEach(function(n) {
+      var wrap   = document.getElementById('s27-wrap' + n);
+      var iconEl = document.getElementById('s27-dd-icon-' + n);
+      if (wrap)   wrap.classList.add('is-correct');
+      if (iconEl) iconEl.innerHTML = checkIco27;
+    });
+    fbBold.textContent = 'ممتاز!';
+    fbReg.innerHTML    = explanation;
+    fb.classList.add('s5-fb--correct');
+    fb.hidden     = false;
+    cont.textContent = 'متابعة';
+    cont.disabled = false;
+    cont.onclick  = function() { goTo(3); };
+    announce('ممتاز!');
+  } else {
+    s27Attempts++;
+    if (s27Attempts === 1) {
+      s27Vals = { 1: null, 2: null };
+      [1, 2].forEach(function(n) {
+        var valEl  = document.getElementById('s27-val' + n);
+        var wrap   = document.getElementById('s27-wrap' + n);
+        var iconEl = document.getElementById('s27-dd-icon-' + n);
+        if (valEl)  valEl.textContent = '-';
+        if (wrap)   wrap.classList.remove('is-open', 'is-correct', 'is-incorrect');
+        if (iconEl) iconEl.innerHTML = '';
+      });
+      cont.disabled = true;
+      fbBold.textContent = 'الإجابة غير دقيقة، هل نحاول مرة أخرى؟';
+      fbReg.innerHTML    = '';
+      fb.classList.add('s5-fb--incorrect');
+      fb.hidden = false;
+      announce('الإجابة غير دقيقة، هل نحاول مرة أخرى؟');
+    } else {
+      s27Solved = true;
+      var checkIco27b = '<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="8" fill="#609E12"/><path d="M4.5 8.25L6.75 10.5L11.5 5.5" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+      var xIco27b     = '<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="8" fill="#B20010"/><path d="M5.5 5.5L10.5 10.5M10.5 5.5L5.5 10.5" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+      [1, 2].forEach(function(n) {
+        var valEl  = document.getElementById('s27-val' + n);
+        var wrap   = document.getElementById('s27-wrap' + n);
+        var iconEl = document.getElementById('s27-dd-icon-' + n);
+        if (valEl) valEl.textContent = correctLabels[n];
+        var isOk = (s27Vals[n] === S27_CORRECT[n]);
+        if (wrap) {
+          if (isOk) { wrap.classList.remove('is-incorrect'); wrap.classList.add('is-correct'); }
+          else      { wrap.classList.remove('is-correct');   wrap.classList.add('is-incorrect'); }
+        }
+        if (iconEl) iconEl.innerHTML = isOk ? checkIco27b : xIco27b;
+      });
+      fbBold.textContent = 'هذا غير صحيح، لكن يمكن التعلم من كل خطأ:​';
+      announce('هذا غير صحيح، لكن يمكن التعلم من كل خطأ:​');
+      fbReg.innerHTML    = explanation;
+      fb.classList.add('s5-fb--incorrect');
+      fb.hidden     = false;
+      cont.textContent = 'متابعة';
+      cont.disabled = false;
+      cont.onclick  = function() { goTo(3); };
+    }
+  }
+  flushResumeSave();   // see s26Submit
+}
+
+function s27ToggleHint() {
+  var popup = document.getElementById('s27-hint-popup');
+  if (popup) {
+    popup.hidden = !popup.hidden;
+    if (!popup.hidden) {
+      announce('التلميح يُفتَح');
+      xapiRequestedHint('002', 'q1');
+    }
+  }
+}
+
+function s27CloseHint() {
+  var popup = document.getElementById('s27-hint-popup');
+  if (popup) { popup.hidden = true; announce('التلميح يُغلَق'); }
+}
+
+
+/* ── Screen 28 ── */
+var s28Solved    = false;
+var s28Correct   = false;
+var s28Attempts  = 0;
+var s28Selected  = []; // indices of checked options
+var S28_CORRECT  = [0, 1, 3]; // א, ב, ד
+
+function s28Enter() {
+  if (s28Solved) {
+    updateNavBar(
+      document.querySelector('#s3 .s18-nav'), 3,
+      [
+        s26Solved ? (s26Correct ? 'correct' : 'wrong') : null,
+        s27Solved ? (s27Correct ? 'correct' : 'wrong') : null,
+        s28Solved ? (s28Correct ? 'correct' : 'wrong') : null, null
+      ],
+      [1, 2, 3, 4]
+    );
+    return;
+  }
+  updateNavBar(
+    document.querySelector('#s3 .s18-nav'), 3,
+    [
+      s26Solved ? (s26Correct ? 'correct' : 'wrong') : null,
+      s27Solved ? (s27Correct ? 'correct' : 'wrong') : null,
+      null, null
+    ],
+    [1, 2, 3, 4]
+  );
+  s28Solved    = false;
+  s28Correct   = false;
+  s28Attempts  = 0;
+  s28Selected  = [];
+
+  document.querySelectorAll('[data-screen="3"] .s5-opt').forEach(function(opt) {
+    opt.classList.remove('is-selected', 'is-correct', 'is-incorrect');
+    opt.disabled = false;
+  });
+
+  var fb   = document.getElementById('s28-feedback');
+  var cont = document.getElementById('s28-continue');
+  var hint = document.getElementById('s28-hint-popup');
+  if (fb)   { fb.hidden = true; fb.classList.remove('s5-fb--incorrect'); }
+  if (cont) cont.disabled = true;
+  if (hint) hint.hidden = true;
+}
+
+function s28Select(idx) {
+  if (s28Solved) return;
+  var pos  = s28Selected.indexOf(idx);
+  var opts = document.querySelectorAll('[data-screen="3"] .s5-opt');
+  if (pos >= 0) {
+    s28Selected.splice(pos, 1);
+    opts[idx].classList.remove('is-selected');
+  } else {
+    s28Selected.push(idx);
+    opts[idx].classList.add('is-selected');
+  }
+  var cont = document.getElementById('s28-continue');
+  if (cont) cont.disabled = (s28Selected.length === 0);
+}
+
+function s28ToggleHint() {
+  var popup = document.getElementById('s28-hint-popup');
+  if (popup) {
+    popup.hidden = !popup.hidden;
+    if (!popup.hidden) {
+      announce('التلميح يُفتَح');
+      xapiRequestedHint('003', 'q1');
+    }
+  }
+}
+
+function s28CloseHint() {
+  var popup = document.getElementById('s28-hint-popup');
+  if (popup) { popup.hidden = true; announce('التلميح يُغلَق'); }
+}
+
+function s28Submit() {
+  if (s28Solved) { goTo(4); return; }
+  if (s28Selected.length === 0) return;
+
+  var fb     = document.getElementById('s28-feedback');
+  var fbBold = document.getElementById('s28-fb-bold');
+  var fbReg  = document.getElementById('s28-fb-regular');
+  var cont   = document.getElementById('s28-continue');
+  var opts   = document.querySelectorAll('[data-screen="3"] .s5-opt');
+
+  var hasGimel  = s28Selected.indexOf(2) >= 0;
+  var hasAll    = S28_CORRECT.every(function(i) { return s28Selected.indexOf(i) >= 0; });
+  var isCorrect = hasAll && !hasGimel;
+  xapiAnswered('003', 'q1', isCorrect, isCorrect || (s28Attempts + 1) >= 2,
+    s28Selected.slice().sort(function(a,b){ return a - b; }).map(function(i){ return xapiAnswerText(document.querySelectorAll('[data-screen="3"] .s5-opt')[i]); }).join(' | '));
+
+  var explanation = '<strong>البندان أ وَ ب</strong> صحيحان، لأنّنا ضربنا مقياس الرسم بـ 4 وبـ 10 بالتلاؤم.<br><strong>البند ت</strong> غير صحيح، لأنّ 1 سم في الخريطة يمثّل 50 سم في الواقع وليس 50 مترًا.<br><strong>البند ث</strong>صحيح، لأنّ 50 سم في المخطّط تمثّل 2,500 سم في الواقع، أي ما يعادل 25 مترًا.';
+
+  fb.classList.remove('s5-fb--correct', 's5-fb--incorrect');
+
+  if (isCorrect) {
+    s28Solved  = true;
+    s28Correct = true;
+    opts.forEach(function(opt, i) {
+      opt.classList.remove('is-selected');
+      opt.disabled = true;
+      opt.classList.add(S28_CORRECT.indexOf(i) >= 0 ? 'is-correct' : 'is-incorrect');
+    });
+    fbBold.textContent = 'ممتاز! ​';
+    fbReg.innerHTML    = explanation;
+    fb.classList.add('s5-fb--correct');
+    fb.hidden     = false;
+    cont.textContent = 'متابعة';
+    cont.disabled = false;
+    cont.onclick  = function() { goTo(4); };
+    announce('ممتاز! ​');
+  } else {
+    s28Attempts++;
+    if (s28Attempts === 1) {
+      // first wrong — keep the selection visible, but the answer must change to resubmit
+      fbBold.textContent = 'الإجابة غير دقيقة، هل نحاول مرة أخرى؟';
+      fbReg.innerHTML    = '';
+      fb.classList.add('s5-fb--incorrect');
+      fb.hidden = false;
+      announce('الإجابة غير دقيقة، هل نحاول مرة أخرى؟');
+      cont.disabled = true;   /* retry lock: s28Select re-enables it when the answer changes */
+    } else {
+      // second wrong — show all correct/incorrect, lock
+      s28Solved = true;
+      opts.forEach(function(opt, i) {
+        opt.classList.remove('is-selected');
+        opt.disabled = true;
+        opt.classList.add(S28_CORRECT.indexOf(i) >= 0 ? 'is-correct' : 'is-incorrect');
+      });
+      fbBold.textContent = 'هذا غير صحيح، لكن يمكن التعلم من كل خطأ:​';
+      announce('هذا غير صحيح، لكن يمكن التعلم من كل خطأ:​');
+      fbReg.innerHTML    = explanation;
+      fb.classList.add('s5-fb--incorrect');
+      fb.hidden     = false;
+      cont.textContent = 'متابعة';
+      cont.disabled = false;
+      cont.onclick  = function() { goTo(4); };
+    }
+  }
+  flushResumeSave();   // see s26Submit
+}
+
+/* ── Screen 29 ── */
+var s29Attempts = 0;
+var s29Solved   = false;
+var s29Correct  = false;
+
+function s29Enter() {
+  updateNavBar(
+    document.querySelector('#s4 .s18-nav'), 4,
+    [
+      s26Solved ? (s26Correct ? 'correct' : 'wrong') : null,
+      s27Solved ? (s27Correct ? 'correct' : 'wrong') : null,
+      s28Solved ? (s28Correct ? 'correct' : 'wrong') : null,
+      null
+    ],
+    [1, 2, 3, 4]
+  );
+  s29Attempts = 0;
+  s29Solved   = false;
+  s29Correct  = false;
+  var input = document.getElementById('s29-answer-input');
+  if (input) { input.value = ''; input.disabled = false; }
+  var cont = document.getElementById('s29-continue');
+  if (cont) cont.disabled = true;
+  var hint = document.getElementById('s29-hint-popup');
+  if (hint) hint.hidden = true;
+  var fb = document.getElementById('s29-feedback');
+  if (fb) { fb.hidden = true; fb.classList.remove('s5-fb--correct', 's5-fb--incorrect'); }
+}
+
+function s29CheckInput() {
+  if (s29Solved) return;
+  var input = document.getElementById('s29-answer-input');
+  var cont  = document.getElementById('s29-continue');
+  if (cont) cont.disabled = !(input && input.value.trim().length > 0);
+}
+
+function s29ToggleHint() {
+  var popup = document.getElementById('s29-hint-popup');
+  if (popup) {
+    popup.hidden = !popup.hidden;
+    if (!popup.hidden) {
+      announce('التلميح يُفتَح');
+      xapiRequestedHint('004', 'q1');
+    }
+  }
+}
+
+function s29CloseHint() {
+  var popup = document.getElementById('s29-hint-popup');
+  if (popup) { popup.hidden = true; announce('التلميح يُغلَق'); }
+}
+
+function s29Submit() {
+  if (s29Solved) { goTo(5); return; }
+
+  var input   = document.getElementById('s29-answer-input');
+  var answer  = input ? input.value.trim() : '';
+  var numVal  = parseFloat(answer.replace(',', '.'));
+  var correct = (numVal === 4);
+
+  s29Attempts++;
+  xapiAnswered('004', 'q1', correct, correct || s29Attempts >= 2,
+    answer);
+
+  var fb      = document.getElementById('s29-feedback');
+  var fbBold  = document.getElementById('s29-fb-bold');
+  var fbReg   = document.getElementById('s29-fb-regular');
+  var cont    = document.getElementById('s29-continue');
+
+  var explanation = 'لإيجاد طول جدار غرفة الجلوس في الواقع، نستخدم مقياس الرسم ونضرب:​<br>400 سم = 2 · 200​<br>للتحويل إلى أمتار، نقسم 400 على 100 (لأنّ كلّ متر يحتوي على 100 سم)، فنحصل على أنّ طول غرفة الجلوس هو 4 أمتار.';
+
+  fb.classList.remove('s5-fb--correct', 's5-fb--incorrect');
+
+  if (correct) {
+    s29Solved  = true;
+    s29Correct = true;
+    input.disabled  = true;
+    fbBold.textContent = 'ممتاز! ​';
+    fbReg.innerHTML    = explanation;
+    fb.classList.add('s5-fb--correct');
+    fb.hidden     = false;
+    cont.textContent = 'متابعة';
+    cont.disabled = false;
+    announce('ممتاز! ​');
+  } else if (s29Attempts === 1) {
+    fbBold.textContent = 'الإجابة غير دقيقة، هل نحاول مرة أخرى؟';
+    fbReg.innerHTML    = '';
+    fb.classList.add('s5-fb--incorrect');
+    fb.hidden       = false;
+    announce('الإجابة غير دقيقة، هل نحاول مرة أخرى؟');
+    cont.disabled = true;   /* retry lock: s29CheckInput re-enables it when the answer changes */
+  } else {
+    s29Solved = true;
+    input.disabled  = true;
+    fbBold.textContent = 'الإجابة غير دقيقة، لكن كل الاحترام على المحاولة!​';
+    announce('الإجابة غير دقيقة، لكن كل الاحترام على المحاولة!​');
+    fbReg.innerHTML    = explanation;
+    fb.classList.add('s5-fb--incorrect');
+    fb.hidden     = false;
+    cont.textContent = 'متابعة';
+    cont.disabled = false;
+  }
+  flushResumeSave();   // see s26Submit
+}
+
+
+/* ── Screen 30 ── */
+var s30Solved   = false;
+var s30Correct  = false;
+var s30Attempts = 0;
+var s30Vals     = { 1: null, 2: null, 3: null, 4: null };
+var S30_CORRECT = { 1: '600', 2: 'القسمة', 3: '200', 4: '3' };
+
+function s30Enter() {
+  updateNavBar(
+    document.querySelector('#s5 .s18-nav'), 4,
+    [
+      s26Solved ? (s26Correct ? 'correct' : 'wrong') : null,
+      s27Solved ? (s27Correct ? 'correct' : 'wrong') : null,
+      s28Solved ? (s28Correct ? 'correct' : 'wrong') : null,
+      null
+    ],
+    [1, 2, 3, 4]
+  );
+  s30Solved   = false;
+  s30Correct  = false;
+  s30Attempts = 0;
+  s30Vals     = { 1: null, 2: null, 3: null, 4: null };
+
+  [1, 2, 3, 4].forEach(function(n) {
+    var valEl = document.getElementById('s30-val' + n);
+    var wrap  = document.getElementById('s30-wrap' + n);
+    var panel = document.getElementById('s30-panel' + n);
+    if (valEl)  valEl.textContent = '-';
+    if (wrap)  wrap.classList.remove('is-correct', 'is-incorrect', 'is-open');
+    if (panel) panel.hidden = true;
+  });
+
+  var fb   = document.getElementById('s30-feedback');
+  var cont = document.getElementById('s30-continue');
+  var hint = document.getElementById('s30-hint-popup');
+  if (fb)   { fb.hidden = true; fb.classList.remove('s5-fb--correct', 's5-fb--incorrect'); }
+  if (cont) cont.disabled = true;
+  if (hint) hint.hidden = true;
+}
+
+function s30ToggleDd(n) {
+  if (s30Solved) return;
+  var isOpen = !document.getElementById('s30-panel' + n).hidden;
+  [1, 2, 3, 4].forEach(function(i) {
+    var p = document.getElementById('s30-panel' + i);
+    var w = document.getElementById('s30-wrap' + i);
+    if (p) p.hidden = true;
+    if (w) w.classList.remove('is-open');
+  });
+  if (!isOpen) {
+    document.getElementById('s30-panel' + n).hidden = false;
+    document.getElementById('s30-wrap' + n).classList.add('is-open');
+  }
+}
+
+function s30Pick(n, val, label) {
+  s30Vals[n] = val;
+  var valEl = document.getElementById('s30-val' + n);
+  var panel = document.getElementById('s30-panel' + n);
+  var wrap  = document.getElementById('s30-wrap' + n);
+  if (valEl) valEl.textContent = label;
+  if (panel) panel.hidden = true;
+  if (wrap)  wrap.classList.remove('is-open');
+  var cont = document.getElementById('s30-continue');
+  if (cont) cont.disabled = !(s30Vals[1] && s30Vals[2] && s30Vals[3] && s30Vals[4]);
+}
+
+function s30ToggleHint() {
+  var popup = document.getElementById('s30-hint-popup');
+  if (popup) {
+    popup.hidden = !popup.hidden;
+    if (!popup.hidden) {
+      announce('التلميح يُفتَح');
+      xapiRequestedHint('005', 'q1');
+    }
+  }
+}
+
+function s30CloseHint() {
+  var popup = document.getElementById('s30-hint-popup');
+  if (popup) { popup.hidden = true; announce('التلميح يُغلَق'); }
+}
+
+function s30Submit() {
+  if (s30Solved) { routeAfterBasicPractice(); return; }
+  if (!s30Vals[1] || !s30Vals[2] || !s30Vals[3] || !s30Vals[4]) return;
+
+  var isCorrect = (s30Vals[1] === S30_CORRECT[1] && s30Vals[2] === S30_CORRECT[2] &&
+                   s30Vals[3] === S30_CORRECT[3] && s30Vals[4] === S30_CORRECT[4]);
+
+  var correctLabels = { 1: '600', 2: 'القسمة', 3: '200', 4: '3' };
+  xapiAnswered('005', 'q1', isCorrect, isCorrect || (s30Attempts + 1) >= 2,
+    [s30Vals[1], s30Vals[2], s30Vals[3], s30Vals[4]].join(' | '));
+
+  var fb     = document.getElementById('s30-feedback');
+  var fbBold = document.getElementById('s30-fb-bold');
+  var fbReg  = document.getElementById('s30-fb-regular');
+  var cont   = document.getElementById('s30-continue');
+
+  var explanation = 'نحوّل 6 أمتار إلى سم فنحصل على 600 سم.<br>بما أنّ المخطّط مصغّر بالنسبة للواقع، سنستخدم عملية القسمة.<br>في مقياس الرسم 200 : 1، كلّ 1 سم في المخطّط يمثّل 200 سم في الواقع، ولذلك نقسم على 200.<br>نقسم 600 سم في الواقع على 200 فنحصل على أنّ طول الجدار في المخطّط هو 3 سم';
+
+  fb.classList.remove('s5-fb--correct', 's5-fb--incorrect');
+
+  if (isCorrect) {
+    s30Solved  = true;
+    s30Correct = true;
+    var checkIco30 = '<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="8" fill="#609E12"/><path d="M4.5 8.25L6.75 10.5L11.5 5.5" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    [1, 2, 3, 4].forEach(function(n) {
+      var wrap   = document.getElementById('s30-wrap' + n);
+      var trig   = wrap ? wrap.querySelector('.s5-dd-trigger') : null;
+      var iconEl = document.getElementById('s30-dd-icon-' + n);
+      if (trig)   trig.disabled = true;
+      if (wrap)   wrap.classList.add('is-correct');
+      if (iconEl) iconEl.innerHTML = checkIco30;
+    });
+    fbBold.textContent = 'ممتاز! ​';
+    fbReg.innerHTML    = explanation;
+    fb.classList.add('s5-fb--correct');
+    fb.hidden     = false;
+    cont.textContent = 'متابعة';
+    cont.disabled = false;
+    cont.onclick  = function() { routeAfterBasicPractice(); };
+    announce('ممتاز! ​');
+  } else {
+    s30Attempts++;
+    if (s30Attempts === 1) {
+      s30Vals = { 1: null, 2: null, 3: null, 4: null };
+      [1, 2, 3, 4].forEach(function(n) {
+        var valEl  = document.getElementById('s30-val' + n);
+        var wrap   = document.getElementById('s30-wrap' + n);
+        var iconEl = document.getElementById('s30-dd-icon-' + n);
+        if (valEl)  valEl.textContent = '-';
+        if (wrap)   wrap.classList.remove('is-open', 'is-correct', 'is-incorrect');
+        if (iconEl) iconEl.innerHTML = '';
+      });
+      cont.disabled = true;
+      fbBold.textContent = 'الإجابة غير دقيقة، هل نحاول مرة أخرى؟';
+      fbReg.innerHTML    = '';
+      fb.classList.add('s5-fb--incorrect');
+      fb.hidden = false;
+      announce('الإجابة غير دقيقة، هل نحاول مرة أخرى؟');
+    } else {
+      s30Solved = true;
+      var checkIco30b = '<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="8" fill="#609E12"/><path d="M4.5 8.25L6.75 10.5L11.5 5.5" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+      var xIco30b     = '<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="8" fill="#B20010"/><path d="M5.5 5.5L10.5 10.5M10.5 5.5L5.5 10.5" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+      [1, 2, 3, 4].forEach(function(n) {
+        var valEl  = document.getElementById('s30-val' + n);
+        var wrap   = document.getElementById('s30-wrap' + n);
+        var trig   = wrap ? wrap.querySelector('.s5-dd-trigger') : null;
+        var iconEl = document.getElementById('s30-dd-icon-' + n);
+        if (trig)  trig.disabled = true;
+        if (valEl) valEl.textContent = correctLabels[n];
+        var isOk = (s30Vals[n] === S30_CORRECT[n]);
+        if (wrap) {
+          if (isOk) { wrap.classList.remove('is-incorrect'); wrap.classList.add('is-correct'); }
+          else      { wrap.classList.remove('is-correct');   wrap.classList.add('is-incorrect'); }
+        }
+        if (iconEl) iconEl.innerHTML = isOk ? checkIco30b : xIco30b;
+      });
+      fbBold.textContent = 'الإجابة غير دقيقة، لكن تعالوا نتعلّم منها:';
+      announce('الإجابة غير دقيقة، لكن تعالوا نتعلّم منها:');
+      fbReg.innerHTML    = explanation;
+      fb.classList.add('s5-fb--incorrect');
+      fb.hidden     = false;
+      cont.textContent = 'متابعة';
+      cont.disabled = false;
+      cont.onclick  = function() { routeAfterBasicPractice(); };
+    }
+  }
+  flushResumeSave();   // see s26Submit
+}
+
+/* ── Screen 31 ── */
+function s31Enter() {
+  var charImg = document.getElementById('s31-char-img');
+  if (charImg) {
+    setImgSrc(charImg, window.lomdaState.selectedCharacter === 'text'
+      ? './assets/images/Character1.png'
+      : './assets/images/Character2.png');
+  }
+}
+
+
+function routeAfterBasicPractice() {
+  goTo(6);
+}
+
+
+
+/* ── Screen 32: תרגול מתקדם — שאלה 1 ── */
+var s32Solved   = false;
+var s32Correct  = false;
+var s32Attempts = 0;
+
+function s32Enter() {
+  s32Solved   = false;
+  s32Correct  = false;
+  s32Attempts = 0;
+  var input = document.getElementById('s32-answer-input');
+  if (input) { input.value = ''; input.disabled = false; }
+  var fb = document.getElementById('s32-feedback');
+  if (fb) { fb.hidden = true; fb.className = 's5-inline-feedback s18-feedback-bar'; }
+  document.getElementById('s32-fb-bold').textContent    = '';
+  document.getElementById('s32-fb-regular').textContent = '';
+  var cont = document.getElementById('s32-continue');
+  if (cont) { cont.disabled = true; cont.onclick = function() { s32Submit(); }; }
+  var hintBtn = document.getElementById('s32-hint-btn');
+  if (hintBtn) hintBtn.hidden = true;
+  var hintPopup = document.getElementById('s32-hint-popup');
+  if (hintPopup) hintPopup.hidden = true;
+}
+
+function s32CheckInput() {
+  var val = document.getElementById('s32-answer-input').value.trim();
+  document.getElementById('s32-continue').disabled = (val === '');
+}
+
+function s32ToggleHint() {
+  var popup = document.getElementById('s32-hint-popup');
+  if (popup) {
+    popup.hidden = !popup.hidden;
+    if (!popup.hidden) {
+      announce('التلميح يُفتَح');
+      xapiRequestedHint('006', 'q1');
+    }
+  }
+}
+
+function s32CloseHint() {
+  var popup = document.getElementById('s32-hint-popup');
+  if (popup) { popup.hidden = true; announce('التلميح يُغلَق'); }
+}
+
+function s32Submit() {
+  if (s32Solved) { goTo(8); return; }
+
+  var rawVal = document.getElementById('s32-answer-input').value.trim();
+  var answer = parseFloat(rawVal.replace(',', '.'));
+  xapiAnswered('006', 'q1', answer === 25, answer === 25 || (s32Attempts + 1) >= 2,
+    rawVal);
+  var fb     = document.getElementById('s32-feedback');
+  var fbBold = document.getElementById('s32-fb-bold');
+  var fbReg  = document.getElementById('s32-fb-regular');
+  var cont   = document.getElementById('s32-continue');
+  var hintBtn = document.getElementById('s32-hint-btn');
+
+  var explanationCorrect = 'كي نحسب، نحوّل أولًا طول السيارة في الواقع إلى سنتيمترات:<br>4.5 · 100 = 450 سم. ​<br>بما أن النموذج المطبوع مصغَّر بـ 18 مرة ​<br>(مقياس الرسم 18 : 1)، نقسم الطول في الواقع بحسب مقياس الرسم:<br>18 ÷ 450 = 25 سم.​';
+  var explanationWrong = 'كي نحسب، نحوّل أولًا طول السيارة في الواقع إلى سنتيمترات:<br>4.5 · 100 = 450 سم. ​<br>بما أن النموذج المطبوع مصغَّر بـ 18 مرة (مقياس الرسم 18 : 1)، نقسم الطول في الواقع بحسب مقياس الرسم:<br> 18 ÷ 450 = 25 سم.';
+
+  if (answer === 25) {
+    s32Solved  = true;
+    s32Correct = true;
+    document.getElementById('s32-answer-input').disabled = true;
+    fbBold.textContent  = 'كل الاحترام! ​';
+    fbReg.innerHTML     = explanationCorrect;
+    fb.classList.remove('s5-fb--incorrect');
+    fb.classList.add('s5-fb--correct');
+    fb.hidden     = false;
+    cont.textContent = 'متابعة';
+    cont.disabled = false;
+    cont.onclick  = function() { goTo(8); };
+    announce('كل الاحترام! ​');
+  } else {
+    s32Attempts++;
+    if (s32Attempts < 2) {
+      // First wrong — brief message + reveal hint button
+      fbBold.textContent  = 'الإجابة غير دقيقة، هل نحاول مرة أخرى؟';
+      fbReg.textContent   = '';
+      fb.classList.remove('s5-fb--correct');
+      fb.classList.add('s5-fb--incorrect');
+      fb.hidden           = false;
+      if (hintBtn) hintBtn.hidden = false;
+      announce('الإجابة غير دقيقة، هل نحاول مرة أخرى؟');
+      cont.disabled = true;   /* retry lock: s32CheckInput re-enables it when the answer changes */
+    } else {
+      // Second wrong — explanation + lock
+      s32Solved = true;
+      document.getElementById('s32-answer-input').disabled = true;
+      fbBold.textContent  = 'هذا خطأ، لكن لدينا فرصة للتعلم:​';
+      announce('هذا خطأ، لكن لدينا فرصة للتعلم:​');
+      fbReg.innerHTML     = explanationWrong;
+      fb.classList.remove('s5-fb--correct');
+      fb.classList.add('s5-fb--incorrect');
+      fb.hidden     = false;
+      cont.textContent = 'متابعة';
+      cont.disabled = false;
+      cont.onclick  = function() { goTo(8); };
+    }
+  }
+  flushResumeSave();   // see s26Submit
+}
+
+/* ── Screen 33: תרגול מתקדם — שאלה 2 ── */
+var s33Selected = null;
+var s33Attempts = 0;
+var s33Solved   = false;
+var s33Correct  = false;
+var S33_CORRECT = 2;
+
+function s33Enter() {
+  if (s33Solved) {
+    updateNavBar(
+      document.querySelector('#s8 .s18-nav'), 2,
+      [s32Solved ? (s32Correct ? 'correct' : 'wrong') : null, s33Correct ? 'correct' : 'wrong'],
+      [7, 8]
+    );
+    return;
+  }
+  updateNavBar(
+    document.querySelector('#s8 .s18-nav'), 2,
+    [s32Solved ? (s32Correct ? 'correct' : 'wrong') : null, null],
+    [7, 8]
+  );
+  s33Selected = null;
+  s33Attempts = 0;
+  s33Solved   = false;
+  s33Correct  = false;
+  document.querySelectorAll('[data-screen="8"] .s5-opt').forEach(function(o) {
+    o.disabled = false;
+    o.classList.remove('is-selected', 'is-correct', 'is-incorrect');
+  });
+  var fb = document.getElementById('s33-feedback');
+  if (fb) { fb.hidden = true; fb.className = 's5-inline-feedback s18-feedback-bar'; }
+  document.getElementById('s33-fb-bold').textContent    = '';
+  document.getElementById('s33-fb-regular').textContent = '';
+  var cont = document.getElementById('s33-continue');
+  if (cont) { cont.disabled = true; cont.onclick = function() { s33Submit(); }; }
+  var hintBtn = document.getElementById('s33-hint-btn');
+  if (hintBtn) hintBtn.hidden = true;
+  var hintPopup = document.getElementById('s33-hint-popup');
+  if (hintPopup) hintPopup.hidden = true;
+}
+
+function s33Select(idx) {
+  if (s33Solved) return;
+  s33Selected = idx;
+  document.querySelectorAll('[data-screen="8"] .s5-opt').forEach(function(opt, i) {
+    opt.classList.toggle('is-selected', i === idx);
+  });
+  document.getElementById('s33-continue').disabled = false;
+}
+
+function s33ToggleHint() {
+  var popup = document.getElementById('s33-hint-popup');
+  if (popup) {
+    popup.hidden = !popup.hidden;
+    if (!popup.hidden) {
+      announce('التلميح يُفتَح');
+      xapiRequestedHint('007', 'q1');
+    }
+  }
+}
+
+function s33CloseHint() {
+  var popup = document.getElementById('s33-hint-popup');
+  if (popup) { popup.hidden = true; announce('التلميح يُغلَق'); }
+}
+
+function getAdvancedPracticeScore() {
+  return (s32Correct ? 1 : 0) + (s33Correct ? 1 : 0);
+}
+
+/* תרגול בסיסי — 4 exercises, pass mark 3. Screens 29 and 30 are parts א+ב of one exercise, so
+   they count together. This is the same rule part 01 states for the same five screens.
+   It was missing here, and routeAfterAdvancedPractice() calls it: the ReferenceError was
+   swallowed by the try around it, so this component never reported its 'completed' at all. */
+function getBasicPracticeScore() {
+  var count = 0;
+  if (s26Correct)                count++; // שאלה 1
+  if (s27Correct)                count++; // שאלה 2
+  if (s28Correct)                count++; // שאלה 3
+  if (s29Correct && s30Correct)  count++; // שאלה 4 (א+ב יחד)
+  return count;
+}
+
+// The component ends here on both paths; the PLATFORM routes on the result (REPORT-XAPI.md §12)
+function routeAfterAdvancedPractice() {
+  /* xAPI: report the component on BOTH paths — a learner who does not clear the gates still has
+     to be reported, or their whole attempt would never be recorded; routing a failing learner is
+     the platform's job, via recommendedAfterFail. This is the last click (s33's check button):
+     report and stop. The ledger persists its mark synchronously because nothing else would write
+     it, and the library's own dedupe lasts only one page load — it cannot survive the reload that
+     brings the learner through here again. */
+  var _n = xapiCorrectCount();
+  xapiEndComponent({ success: getBasicPracticeScore() >= 3 && getAdvancedPracticeScore() >= 2,
+                     score: { scaled: _n / 7 } }, document.getElementById('s33-continue'));
+  /* The hop to 03 lives on only for a local walkthrough (DEV_NAV, unit-js/10-identity.js). */
+  if (DEV_NAV) {
+    writeForwardState('methodica-math-scale-01-03', '#screen=8');
+    window.location.href = '../methodica-math-scale-01-03/index.html' + window.location.search;
+  }
+}
+
+function s33Submit() {
+  if (s33Solved) { routeAfterAdvancedPractice(); return; }
+  if (s33Selected === null) return;
+
+  var correct = (s33Selected === S33_CORRECT);
+  s33Attempts++;
+  xapiAnswered('007', 'q1', correct, correct || s33Attempts >= 2,
+    xapiAnswerText(document.querySelectorAll('[data-screen="8"] .s5-opt')[s33Selected]));
+
+  var fb      = document.getElementById('s33-feedback');
+  var fbBold  = document.getElementById('s33-fb-bold');
+  var fbReg   = document.getElementById('s33-fb-regular');
+  var cont    = document.getElementById('s33-continue');
+  var hintBtn = document.getElementById('s33-hint-btn');
+  var opts    = document.querySelectorAll('[data-screen="8"] .s5-opt');
+
+  var explanation = '25 مترًا يساوي 2,500 سم، ولذلك فإنّ النسبة بين طول البركة في المخطّط وطولها في الواقع هي2,500 : 5 .<br>نقسم على 5 فنحصل على مقياس الرسم 500 : 1.';
+
+  fb.classList.remove('s5-fb--correct', 's5-fb--incorrect');
+
+  if (correct) {
+    s33Solved  = true;
+    s33Correct = true;
+    opts[s33Selected].classList.remove('is-selected');
+    opts[s33Selected].classList.add('is-correct');
+    opts.forEach(function(o) { o.disabled = true; });
+    fbBold.textContent  = 'رائع! ​';
+    fbReg.innerHTML     = explanation;
+    fb.classList.add('s5-fb--correct');
+    fb.hidden     = false;
+    cont.textContent = 'متابعة';
+    cont.disabled = false;
+    cont.onclick  = function() { routeAfterAdvancedPractice(); };
+    announce('رائع! ​');
+  } else if (s33Attempts === 1) {
+    fbBold.textContent  = 'الإجابة غير دقيقة، هل نحاول مرة أخرى؟';
+    fbReg.textContent   = '';
+    fb.classList.add('s5-fb--incorrect');
+    fb.hidden           = false;
+    if (hintBtn) hintBtn.hidden = false;
+    announce('الإجابة غير دقيقة، هل نحاول مرة أخرى؟');
+    cont.disabled = true;   /* retry lock: s33Select re-enables it when the answer changes */
+  } else {
+    s33Solved = true;
+    opts.forEach(function(o, i) {
+      o.disabled = true;
+      o.classList.remove('is-selected');
+      if (i === S33_CORRECT) o.classList.add('is-correct');
+      else if (i === s33Selected) o.classList.add('is-incorrect');
+    });
+    fbBold.textContent  = 'هذا خطأ، لا بأس – تعالوا نتعلّم منه:';
+    announce('هذا خطأ، لا بأس – تعالوا نتعلّم منه:');
+    fbReg.innerHTML     = explanation;
+    fb.classList.add('s5-fb--incorrect');
+    fb.hidden     = false;
+    cont.textContent = 'متابعة';
+    cont.disabled = false;
+    cont.onclick  = function() { routeAfterAdvancedPractice(); };
+  }
+  flushResumeSave();   // see s26Submit
+}
+
+
+
+
+
+/* ═══════════════════ xAPI (720) — item scope + question ids ═══════════════════
+   Everything below is generic across the five components except SCREEN_TO_SUBCONTENT,
+   XAPI_COMP_SLUG and XAPI_EVAL_ITEMS. */
+
+/* Screen (data-screen index) -> [subContent suffix, page-in-item]; null = no catalog item.
+   Read by xapiOnScreen (element 0) and by submitReport (both elements). */
+var SCREEN_TO_SUBCONTENT = {
+  0: null,            // intro to basic practice
+  1: ['001', 1],      // basic 1
+  2: ['002', 1],      // basic 2
+  3: ['003', 1],      // basic 3
+  4: ['004', 1],      // basic 4
+  5: ['005', 1],      // basic 5
+  6: null,            // transition to the two advanced exercises
+  7: ['006', 1],      // advanced 1
+  8: ['007', 1]       // advanced 2
+};
+
+var XAPI_COMP_SLUG = 'methodica-math-scale-01-02';
+/* Component and item ids must match metadata/*.json byte-for-byte — that convention keeps a
+   TRAILING SLASH on unit, component and item ids (but not on question ids). */
+var XAPI_COMP_ID   = XAPI_ID_PREFIX + XAPI_COMP_SLUG + '/';
+
+
+
+/* Items that carry a graded question IN CODE. */
+var XAPI_EVAL_ITEMS = { '001': 1, '002': 1, '003': 1, '004': 1, '005': 1, '006': 1, '007': 1 };
+
+
+
+/* Report modal, draggable feedback, a11y wiring and image zoom: ../unit-js/ */
+
+
+/* ── Per-part boot hook ──
+   Called by ../unit-js/90-boot.js, the single place startup side effects run from.
+   These used to be a top-level IIFE and DOMContentLoaded handlers. */
+function partBoot() {
+  /* Base pose only. The _holdhands variant exists in component 01, not here, so
+     preloading it was two guaranteed 404s on every boot of this component.
+     Chosen family only, serialised, and after the load event -- see component 01's partBoot. */
+  var char = window.lomdaState.selectedCharacter === 'video' ? 'Character2' : 'Character1';
+  preloadImages(['./assets/images/' + char + '.png']);
+
+  document.querySelectorAll('.option-card').forEach(card => {
+    card.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        selectOption(card);
+      }
+    });
+  });
+
+  /* Close dropdowns when clicking outside */
+  document.addEventListener('click', function (e) {
+    if (!e.target.closest('.s5-dropdown')) {
+      document.querySelectorAll('[data-screen="5"] .s5-dropdown').forEach(function (d) {
+        d.classList.remove('is-open');
+        var panel = document.getElementById('s5-dd-panel-' + d.dataset.row);
+        if (panel) panel.hidden = true;
+      });
+      [1, 2, 3].forEach(function(n) {
+        var w = document.getElementById('s26-wrap' + n);
+        var p = document.getElementById('s26-panel' + n);
+        if (w) w.classList.remove('is-open');
+        if (p) p.hidden = true;
+      });
+      [1, 2].forEach(function(n) {
+        var w = document.getElementById('s27-wrap' + n);
+        var p = document.getElementById('s27-panel' + n);
+        if (w) w.classList.remove('is-open');
+        if (p) p.hidden = true;
+      });
+      [1, 2, 3, 4].forEach(function(n) {
+        var w = document.getElementById('s30-wrap' + n);
+        var p = document.getElementById('s30-panel' + n);
+        if (w) w.classList.remove('is-open');
+        if (p) p.hidden = true;
+      });
+    }
+  });
+
+  /* Paint the landing screen from the chosen character, exactly as component 05 has always
+     done. Without it this component kept whatever avatar family the markup hardcoded: the
+     loader's own repaint is the document-truth pass, but it needs the state read to have
+     succeeded, so with resume off, offline, or on a failed read there was nothing at all.
+     Idempotent, and it runs behind the boot cover. */
+  resetScreenState(currentScreen);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   RESUME — save / restore execution state to KATA (xAPI State API)
+   One State document per unit, keyed by window.XAPI_UNIT_ID.
+   Gen-A: five basic exercises (dropdown/multi-select/value) + two advanced ones.
+
+   Enabled by RESUME_ENABLED at the top of this file, which also switches the loader to
+   xapi-720-j.js (the State transport -i lacks).
+
+
+
+
+
+
+
+
+
+
+
+/* ── The 'completed' ledger ──────────────────────────────────────────
+   One 'completed' per component, per item, per unit attempt — the back button makes every finished
+   screen re-reachable, and the library's dedupe only spans a single page load. `initialized` is
+   deliberately NOT guarded: the platform asks for it on every entry.
+
+
+
+
+
+/* Variables copied verbatim in both directions. */
+var RESUME_PLAIN_VARS = ['s26Solved', 's26Correct', 's26Attempts', 's27Solved', 's27Correct', 's27Attempts', 's28Solved', 's28Correct', 's28Attempts', 's29Solved', 's29Correct', 's29Attempts', 's30Solved', 's30Correct', 's30Attempts', 's32Solved', 's32Correct', 's32Attempts', 's33Solved', 's33Correct', 's33Attempts', 's33Selected'];
+
+/* Typed answers live only in the DOM — no variable holds them — so they travel by element id.
+   Reading them at capture time is safe: no submit branch clears these inputs, only disables. */
+var RESUME_INPUT_IDS = ['s29-answer-input', 's32-answer-input'];
+
+/* The dropdown screens keep the machine value in sNNVals but the LABEL only in the DOM, so the
+   displayed text travels the same way. '-' is a legitimate captured value: it is what an unset
+   row (and a row cleared by a first wrong answer) shows. */
+var RESUME_TEXT_IDS = ['s26-val1', 's26-val2', 's26-val3', 's27-val1', 's27-val2',
+                       's30-val1', 's30-val2', 's30-val3', 's30-val4'];
+
+function captureResumeInputs() {
+  var out = {};
+  RESUME_INPUT_IDS.forEach(function (id) {
+    var el = document.getElementById(id);
+    if (el) out[id] = el.value;
+  });
+  return out;
+}
+
+function captureResumeTexts() {
+  var out = {};
+  RESUME_TEXT_IDS.forEach(function (id) {
+    var el = document.getElementById(id);
+    if (el) out[id] = el.textContent;
+  });
+  return out;
+}
+
+/* This part's payload only. `v` and `part` live on the enclosing v3 document, not in here. */
+function capturePartPayload() {
+  var st = {
+    currentScreen: currentScreen,
+    qResults: Object.assign({}, XAPI_Q_RESULTS),
+    s26Vals: Object.assign({}, s26Vals),
+    s27Vals: Object.assign({}, s27Vals),
+    s30Vals: Object.assign({}, s30Vals),
+    s28Selected: s28Selected.slice(),
+    inputs: captureResumeInputs(),
+    texts: captureResumeTexts(),
+    vars: {}
+  };
+  /* eval keeps this list-driven: these are file-scope `var`/`let` bindings, so they are
+     not reachable as window properties. */
+  RESUME_PLAIN_VARS.forEach(function (k) {
+    try { st.vars[k] = eval(k); } catch (e) {}
+  });
+  return st;
+}
+
+/* Both restore passes run through here, so they can never drift apart. The parameter must stay
+   named `st` — the eval below assigns through that name. */
+function applyResumeVars(st) {
+  if (st.qResults) XAPI_Q_RESULTS = Object.assign({}, st.qResults);
+  if (st.s26Vals) s26Vals = Object.assign({}, st.s26Vals);
+  if (st.s27Vals) s27Vals = Object.assign({}, st.s27Vals);
+  if (st.s30Vals) s30Vals = Object.assign({}, st.s30Vals);
+  if (st.s28Selected) s28Selected = st.s28Selected.slice();
+  if (st.vars) {
+    Object.keys(st.vars).forEach(function (k) {
+      if (RESUME_PLAIN_VARS.indexOf(k) === -1) return;   // never assign an unlisted name
+      try { eval(k + ' = st.vars[k];'); } catch (e) {}
+    });
+  }
+}
+
+function applyResumeDom(st) {
+  RESUME_INPUT_IDS.forEach(function (id) {
+    if (!st.inputs || typeof st.inputs[id] !== 'string') return;
+    var el = document.getElementById(id);
+    if (el) el.value = st.inputs[id];
+  });
+  RESUME_TEXT_IDS.forEach(function (id) {
+    if (!st.texts || typeof st.texts[id] !== 'string') return;
+    var el = document.getElementById(id);
+    if (el) el.textContent = st.texts[id];
+  });
+}
+
+
+
+/* ── Screen painters ────────────────────────────────────────────────
+   Every screen here except 0 and 6 is a question screen. Each painter mirrors the DOM writes of
+   its sNNSubmit branches and NOTHING else — no state mutation, no statements, no announce().
+   Two axes, not four branches: solved picks the terminal look, otherwise an attempt already spent
+   shows the interim feedback AND the current selection is repainted, because those co-occur.
+   Correctness comes from sNNCorrect. NOTE this component counts attempts differently from the
+   others — sNNAttempts is incremented only in the wrong branch — so correctness must never be
+   inferred from it. The nav bars need no painting: sNNEnter() already builds them from
+   sNNSolved/sNNCorrect, which the second assignment pass has restored by then. */
+function restoreScreenUI(n) {
+  try {
+    if (n === 1) s26RestoreUI();
+    if (n === 2) s27RestoreUI();
+    if (n === 3) s28RestoreUI();
+    if (n === 4) s29RestoreUI();
+    if (n === 5) s30RestoreUI();
+    if (n === 7) s32RestoreUI();
+    if (n === 8) s33RestoreUI();
+  } catch (e) { console.error('[resume] restoreScreenUI', e); }
+}
+
+var RESUME_ICO_OK  = '<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="8" fill="#609E12"/><path d="M4.5 8.25L6.75 10.5L11.5 5.5" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+var RESUME_ICO_ERR = '<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="8" fill="#B20010"/><path d="M5.5 5.5L10.5 10.5M10.5 5.5L5.5 10.5" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+/* Explanation bodies, copied from the branches they mirror. */
+var S26_RESTORE_EXPLANATION = '1 سم في الخريطة يساوي 1,000 سم في الواقع.<br>لإيجاد طول المسار في الواقع، علينا ضرب المسافة في الخريطة، وهي 5 سم، بـ 1,000.';
+var S27_RESTORE_EXPLANATION = 'العملية مكوّنة من مرحلتين: <br>1. نضرب 7 سم بـ 5,000 لنحصل على المسافة في الواقع ونحصل على 35,000 سم. ​<br>2. لتحويل السنتيمترات إلى أمتار، نقسم على 100 فنحصل على 350 مترًا.';
+var S28_RESTORE_EXPLANATION = '<strong>البندان أ وَ ب</strong> صحيحان، لأنّنا ضربنا مقياس الرسم بـ 4 وبـ 10 بالتلاؤم.<br><strong>البند ت</strong> غير صحيح، لأنّ 1 سم في الخريطة يمثّل 50 سم في الواقع وليس 50 مترًا.<br><strong>البند ث</strong>صحيح، لأنّ 50 سم في المخطّط تمثّل 2,500 سم في الواقع، أي ما يعادل 25 مترًا.';
+var S29_RESTORE_EXPLANATION = 'لإيجاد طول جدار غرفة الجلوس في الواقع، نستخدم مقياس الرسم ونضرب:​<br>400 سم = 2 · 200​<br>للتحويل إلى أمتار، نقسم 400 على 100 (لأنّ كلّ متر يحتوي على 100 سم)، فنحصل على أنّ طول غرفة الجلوس هو 4 أمتار.';
+var S30_RESTORE_EXPLANATION = 'نحوّل 6 أمتار إلى سم فنحصل على 600 سم.<br>بما أنّ المخطّط مصغّر بالنسبة للواقع، سنستخدم عملية القسمة.<br>في مقياس الرسم 200 : 1، كلّ 1 سم في المخطّط يمثّل 200 سم في الواقع، ولذلك نقسم على 200.<br>نقسم 600 سم في الواقع على 200 فنحصل على أنّ طول الجدار في المخطّط هو 3 سم';
+var S32_RESTORE_EXPLANATION_OK = 'كي نحسب، نحوّل أولًا طول السيارة في الواقع إلى سنتيمترات:<br>4.5 · 100 = 450 سم. ​<br>بما أن النموذج المطبوع مصغَّر بـ 18 مرة ​<br>(مقياس الرسم 18 : 1)، نقسم الطول في الواقع بحسب مقياس الرسم:<br>18 ÷ 450 = 25 سم.​';
+var S32_RESTORE_EXPLANATION_ERR = 'كي نحسب، نحوّل أولًا طول السيارة في الواقع إلى سنتيمترات:<br>4.5 · 100 = 450 سم. ​<br>بما أن النموذج المطبوع مصغَّر بـ 18 مرة (مقياس الرسم 18 : 1)، نقسم الطول في الواقع بحسب مقياس الرسم:<br> 18 ÷ 450 = 25 سم.';
+var S33_RESTORE_EXPLANATION = '25 مترًا يساوي 2,500 سم، ولذلك فإنّ النسبة بين طول البركة في المخطّط وطولها في الواقع هي2,500 : 5 .<br>نقسم على 5 فنحصل على مقياس الرسم 500 : 1.';
+
+/* Screens 1, 2 and 5 — the dropdown-completion screens. Mirror s26Submit / s27Submit / s30Submit.
+   The row labels are not recomputed here: applyResumeDom() already put the captured display text
+   back, which is exactly what the correct branch leaves on screen. The final-wrong branch
+   overwrites the rows with the correct labels, so that one is applied explicitly. */
+function restoreDropdownScreenUI(cfg) {
+  var fb     = document.getElementById(cfg.prefix + '-feedback');
+  var fbBold = document.getElementById(cfg.prefix + '-fb-bold');
+  var fbReg  = document.getElementById(cfg.prefix + '-fb-regular');
+  var cont   = document.getElementById(cfg.prefix + '-continue');
+  if (!fb || !fbBold || !fbReg || !cont) return;
+
+  if (cfg.solved) {
+    cfg.rows.forEach(function (n) {
+      var valEl  = document.getElementById(cfg.prefix + '-val' + n);
+      var wrap   = document.getElementById(cfg.prefix + '-wrap' + n);
+      var trig   = wrap ? wrap.querySelector('.s5-dd-trigger') : null;
+      var iconEl = document.getElementById(cfg.prefix + '-dd-icon-' + n);
+      if (cfg.lockTriggers && trig) trig.disabled = true;
+      if (cfg.correct) {
+        if (wrap)   wrap.classList.add('is-correct');
+        if (iconEl) iconEl.innerHTML = RESUME_ICO_OK;
+        return;
+      }
+      if (valEl) valEl.textContent = cfg.labels[n];
+      var isOk = (cfg.vals[n] === cfg.correctVals[n]);
+      if (wrap) {
+        if (isOk) { wrap.classList.remove('is-incorrect'); wrap.classList.add('is-correct'); }
+        else      { wrap.classList.remove('is-correct');   wrap.classList.add('is-incorrect'); }
+      }
+      if (iconEl) iconEl.innerHTML = isOk ? RESUME_ICO_OK : RESUME_ICO_ERR;
+    });
+    fbBold.textContent = cfg.correct ? cfg.boldCorrect : cfg.boldWrong;
+    fbReg.innerHTML    = cfg.correct ? cfg.explanation : (cfg.wrongPrefix || '') + cfg.explanation;
+    fb.classList.add(cfg.correct ? 's5-fb--correct' : 's5-fb--incorrect');
+    fb.hidden        = false;
+    cont.textContent = 'متابعة';
+    cont.disabled    = false;
+    if (cfg.onContinue) cont.onclick = cfg.onContinue;
+    return;
+  }
+
+  if (cfg.attempts >= 1) {
+    fbBold.textContent = 'الإجابة غير دقيقة، هل نحاول مرة أخرى؟';
+    fbReg.innerHTML    = '';
+    fb.classList.add('s5-fb--incorrect');
+    fb.hidden = false;
+  }
+  cont.disabled = !cfg.rows.every(function (n) { return cfg.vals[n]; });   // the live predicate
+}
+
+function s26RestoreUI() {
+  restoreDropdownScreenUI({
+    prefix: 's26', rows: [1, 2, 3], lockTriggers: true,
+    solved: s26Solved, correct: s26Correct, attempts: s26Attempts,
+    vals: s26Vals, correctVals: S26_CORRECT, labels: { 1: '5', 2: '1,000', 3: '5,000' },
+    boldCorrect: 'رائع!', boldWrong: 'هذا خطأ، لا بأس – تعالوا نتعلّم منه:',
+    explanation: S26_RESTORE_EXPLANATION, wrongPrefix: 'التمرين الصحيح معروض الآن.​<br>'
+    /* no onContinue: s26Submit guards on s26Solved and forwards, as the live path relies on */
+  });
+}
+
+function s27RestoreUI() {
+  restoreDropdownScreenUI({
+    prefix: 's27', rows: [1, 2], lockTriggers: false,
+    solved: s27Solved, correct: s27Correct, attempts: s27Attempts,
+    vals: s27Vals, correctVals: S27_CORRECT, labels: { 1: '35,000', 2: '350' },
+    boldCorrect: 'ممتاز!', boldWrong: 'هذا غير صحيح، لكن يمكن التعلم من كل خطأ:​',
+    explanation: S27_RESTORE_EXPLANATION,
+    onContinue: function () { goTo(3); }
+  });
+}
+
+function s30RestoreUI() {
+  restoreDropdownScreenUI({
+    prefix: 's30', rows: [1, 2, 3, 4], lockTriggers: true,
+    solved: s30Solved, correct: s30Correct, attempts: s30Attempts,
+    vals: s30Vals, correctVals: S30_CORRECT,
+    labels: { 1: '600', 2: 'القسمة', 3: '200', 4: '3' },
+    boldCorrect: 'ممتاز! ​', boldWrong: 'الإجابة غير دقيقة، لكن تعالوا نتعلّم منها:',
+    explanation: S30_RESTORE_EXPLANATION,
+    onContinue: function () { routeAfterBasicPractice(); }
+  });
+}
+
+/* Screen 3 — multi-select. Mirrors s28Submit, whose two terminal branches paint the same marks. */
+function s28RestoreUI() {
+  var fb     = document.getElementById('s28-feedback');
+  var fbBold = document.getElementById('s28-fb-bold');
+  var fbReg  = document.getElementById('s28-fb-regular');
+  var cont   = document.getElementById('s28-continue');
+  var opts   = Array.prototype.slice.call(document.querySelectorAll('[data-screen="3"] .s5-opt'));
+  if (!fb || !fbBold || !fbReg || !cont) return;
+
+  if (s28Solved) {
+    opts.forEach(function (opt, i) {
+      opt.classList.remove('is-selected');
+      opt.disabled = true;
+      opt.classList.add(S28_CORRECT.indexOf(i) >= 0 ? 'is-correct' : 'is-incorrect');
+    });
+    fbBold.textContent = s28Correct ? 'ممتاز! ​' : 'هذا غير صحيح، لكن يمكن التعلم من كل خطأ:​';
+    fbReg.innerHTML    = S28_RESTORE_EXPLANATION;
+    fb.classList.add(s28Correct ? 's5-fb--correct' : 's5-fb--incorrect');
+    fb.hidden        = false;
+    cont.textContent = 'متابعة';
+    cont.disabled    = false;
+    cont.onclick     = function () { goTo(4); };
+    return;
+  }
+
+  opts.forEach(function (opt, i) {
+    opt.classList.toggle('is-selected', s28Selected.indexOf(i) >= 0);
+  });
+  if (s28Attempts >= 1) {
+    fbBold.textContent = 'الإجابة غير دقيقة، هل نحاول مرة أخرى؟';
+    fbReg.innerHTML    = '';
+    fb.classList.add('s5-fb--incorrect');
+    fb.hidden = false;
+    /* Retry lock - see the live branch. The selection is kept, so the predicate below would
+       re-enable the button on an unchanged answer. */
+    cont.disabled = true;
+    return;
+  }
+  cont.disabled = (s28Selected.length === 0);   // the live predicate
+}
+
+/* Screens 4 and 7 — value inputs. Mirror s29Submit / s32Submit. */
+function restoreValueScreenUI(cfg) {
+  var fb      = document.getElementById(cfg.prefix + '-feedback');
+  var fbBold  = document.getElementById(cfg.prefix + '-fb-bold');
+  var fbReg   = document.getElementById(cfg.prefix + '-fb-regular');
+  var cont    = document.getElementById(cfg.prefix + '-continue');
+  var hintBtn = document.getElementById(cfg.prefix + '-hint-btn');
+  var input   = document.getElementById(cfg.prefix + '-answer-input');
+  if (!fb || !fbBold || !fbReg || !cont) return;
+
+  if (cfg.solved) {
+    if (input) input.disabled = true;
+    fbBold.textContent = cfg.correct ? cfg.boldCorrect : cfg.boldWrong;
+    fbReg.innerHTML    = cfg.correct ? cfg.explanationOk : cfg.explanationErr;
+    fb.classList.add(cfg.correct ? 's5-fb--correct' : 's5-fb--incorrect');
+    fb.hidden        = false;
+    cont.textContent = 'متابعة';
+    cont.disabled    = false;
+    if (cfg.onContinue) cont.onclick = cfg.onContinue;
+    return;
+  }
+
+  if (cfg.attempts >= 1) {
+    fbBold.textContent = 'الإجابة غير دقيقة، هل نحاول مرة أخرى؟';
+    fbReg.textContent  = '';
+    fb.classList.add('s5-fb--incorrect');
+    fb.hidden = false;
+    if (cfg.revealHint && hintBtn) hintBtn.hidden = false;
+    /* Retry lock - see the live branch, and restoreValueScreenUI for the reasoning. */
+    cont.disabled = true;
+    return;
+  }
+  cont.disabled = !(input && input.value.trim() !== '');   // the live predicate
+}
+
+function s29RestoreUI() {
+  restoreValueScreenUI({
+    prefix: 's29', solved: s29Solved, correct: s29Correct, attempts: s29Attempts,
+    boldCorrect: 'ممتاز! ​', boldWrong: 'الإجابة غير دقيقة، لكن كل الاحترام على المحاولة!​',
+    explanationOk: S29_RESTORE_EXPLANATION, explanationErr: S29_RESTORE_EXPLANATION,
+    revealHint: false
+    /* no onContinue: s29Submit guards on s29Solved and forwards */
+  });
+}
+
+function s32RestoreUI() {
+  restoreValueScreenUI({
+    prefix: 's32', solved: s32Solved, correct: s32Correct, attempts: s32Attempts,
+    boldCorrect: 'كل الاحترام! ​', boldWrong: 'هذا خطأ، لكن لدينا فرصة للتعلم:​',
+    explanationOk: S32_RESTORE_EXPLANATION_OK, explanationErr: S32_RESTORE_EXPLANATION_ERR,
+    revealHint: true,
+    onContinue: function () { goTo(8); }
+  });
+}
+
+/* Screen 8 — single choice. Mirrors s33Submit. */
+function s33RestoreUI() {
+  var fb      = document.getElementById('s33-feedback');
+  var fbBold  = document.getElementById('s33-fb-bold');
+  var fbReg   = document.getElementById('s33-fb-regular');
+  var cont    = document.getElementById('s33-continue');
+  var hintBtn = document.getElementById('s33-hint-btn');
+  var opts    = Array.prototype.slice.call(document.querySelectorAll('[data-screen="8"] .s5-opt'));
+  if (!fb || !fbBold || !fbReg || !cont) return;
+
+  if (s33Solved) {
+    opts.forEach(function (o, i) {
+      o.disabled = true;
+      o.classList.remove('is-selected');
+      if (s33Correct) {
+        if (i === s33Selected) o.classList.add('is-correct');
+      } else if (i === S33_CORRECT) {
+        o.classList.add('is-correct');
+      } else if (i === s33Selected) {
+        o.classList.add('is-incorrect');
+      }
+    });
+    fbBold.textContent = s33Correct ? 'رائع! ​' : 'هذا خطأ، لا بأس – تعالوا نتعلّم منه:';
+    fbReg.innerHTML    = S33_RESTORE_EXPLANATION;
+    fb.classList.add(s33Correct ? 's5-fb--correct' : 's5-fb--incorrect');
+    fb.hidden        = false;
+    cont.textContent = 'متابعة';
+    cont.disabled    = false;
+    cont.onclick     = function () { routeAfterAdvancedPractice(); };
+    return;
+  }
+
+  if (s33Selected !== null && s33Selected !== undefined) {
+    opts.forEach(function (o, i) { o.classList.toggle('is-selected', i === s33Selected); });
+    cont.disabled = false;
+  }
+  if (s33Attempts >= 1) {
+    /* Retry lock - see the live branch, and restoreValueScreenUI for the reasoning. */
+    cont.disabled = true;
+    fbBold.textContent = 'الإجابة غير دقيقة، هل نحاول مرة أخرى؟';
+    fbReg.textContent  = '';
+    fb.classList.add('s5-fb--incorrect');
+    fb.hidden = false;
+    if (hintBtn) hintBtn.hidden = false;
+  }
+}
+
+
+
+/* xAPI loader: ../unit-js/50-loader.js. This component supplies its metadata file
+   and, where it needs one, an onXapiReady() hook. */
+var XAPI_METADATA_FILE = '../metadata/methodica-math-scale-01-02.json';
