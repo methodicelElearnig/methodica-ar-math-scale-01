@@ -40,7 +40,7 @@ const BASE       = process.argv[2] || path.join(__dirname, '..');
    from BASE made the one assertion below fail on every package run for a reason that
    was the exclusion working. The stub belongs to the harness, so it resolves from here. */
 const HARNESS_DIR = __dirname;
-const UNIT       = 'methodica-math-scale-01';
+const UNIT       = 'methodica-ar-math-scale-01';
 const COMPONENTS = ['01', '02', '03', '04', '05'];
 const PART_DIR   = c => UNIT + '-' + c;
 
@@ -398,7 +398,7 @@ function checkStateDocument() {
      normal lowercase one passes whether or not toLowerCase() is there at all,
      which is exactly the weak assertion this replaced. */
   const shouty = new JSDOM('<!doctype html><html><body></body></html>', {
-    url: 'http://localhost:8777/Methodica-Math-Scale-01-01/index.html',
+    url: 'http://localhost:8777/Methodica-Ar-Math-Scale-01-01/index.html',
     runScripts: 'dangerously',
   });
   const sr = makeRunner(shouty.window);
@@ -651,7 +651,7 @@ function checkBackEdges() {
 
   /* Layer 3: no edge anywhere -> the hard-coded fallback. */
   ok('edges', 'with no edge, previousPartHref uses the fallback',
-    /methodica-math-scale-01-02\/index\.html.*#screen=8$/.test(
+    /methodica-ar-math-scale-01-02\/index\.html.*#screen=8$/.test(
       val("previousPartHref('" + UNIT + "-02', '#screen=8')")),
     String(val("previousPartHref('" + UNIT + "-02', '#screen=8')")));
 
@@ -659,7 +659,7 @@ function checkBackEdges() {
      arrives — the window in which the back button is already clickable. */
   exec("window.sessionStorage.setItem('" + NAV_KEY + "', JSON.stringify({ '" + UNIT + "-03': { from: '" + UNIT + "-01', hash: '#screen=23' } }));");
   ok('edges', 'a sessionStorage edge beats the fallback',
-    /methodica-math-scale-01-01\/index\.html.*#screen=23$/.test(
+    /methodica-ar-math-scale-01-01\/index\.html.*#screen=23$/.test(
       val("previousPartHref('" + UNIT + "-02', '#screen=8')")),
     String(val("previousPartHref('" + UNIT + "-02', '#screen=8')")));
 

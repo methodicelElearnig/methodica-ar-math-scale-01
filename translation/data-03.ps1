@@ -1,4 +1,4 @@
-﻿# Part 03: methodica-math-scale-01-03 (data-screen 0,1,2 — contiguous)
+﻿# Part 03: methodica-ar-math-scale-01-03 (data-screen 0,1,2 — contiguous)
 
 Scr -Id '01-03-00' -Title 'Congratulations / transition to off-computer class task' -Type 'TransitionScreen' -SourceFile 'index.html' -Selector 'section.screen[data-screen="0"]#s0'
 Scr -Id '01-03-01' -Title 'Class task instructions (off-computer measurement task)' -Type 'other (instruction/reading screen)' -SourceFile 'index.html' -Selector 'section.screen[data-screen="1"]#s1' `

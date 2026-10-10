@@ -1,4 +1,4 @@
-﻿# Part 04: methodica-math-scale-01-04 (data-screen 0-5, contiguous; TOTAL_SCREENS=6)
+﻿# Part 04: methodica-ar-math-scale-01-04 (data-screen 0-5, contiguous; TOTAL_SCREENS=6)
 # NOTE: dead/unreachable code exists in script.js for a "screen 42 / s6" that has no matching
 # HTML (#s6 does not exist, TOTAL_SCREENS=6 caps navigation at screen 5). Its Hebrew strings are
 # captured under 01-04-99 with manual-review flags per instructions (list, do not silently drop).

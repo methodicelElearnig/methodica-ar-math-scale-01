@@ -13,7 +13,7 @@
 ## מבנה קבצים
 
 ```
-methodica-math-scale-01-04/
+methodica-ar-math-scale-01-04/
 ├── index.html          ← 6 מסכים (0–5), single-page
 ├── index_dev.html       ← עוטף index.html ב-iframe, מוסיף סרגל ניווט למסכים (dev-only)
 ├── styles.css           ← כל הסטיילים
@@ -26,7 +26,7 @@ methodica-math-scale-01-04/
     └── icons/           ← (ריק כרגע) README.md מניפסט
 ```
 
-> **עדכון:** מסכים 7–17 (שאלת השיא — "סיירת הרחפנים") הועברו לתיקייה עצמאית נפרדת, `methodica-math-scale-01-05`. הם הוסרו מ-`index.html`/`styles.css`/`script.js` של תיקייה זו. כפתור ה"המשך" במסך 5 מנווט אליהם בעזרת `window.location.href` (ניווט אמיתי בין דפים, לא `goTo()` פנימי) — ראו `goToNextModule()` ב-`script.js`.
+> **עדכון:** מסכים 7–17 (שאלת השיא — "סיירת הרחפנים") הועברו לתיקייה עצמאית נפרדת, `methodica-ar-math-scale-01-05`. הם הוסרו מ-`index.html`/`styles.css`/`script.js` של תיקייה זו. כפתור ה"המשך" במסך 5 מנווט אליהם בעזרת `window.location.href` (ניווט אמיתי בין דפים, לא `goTo()` פנימי) — ראו `goToNextModule()` ב-`script.js`.
 
 ---
 
@@ -95,7 +95,7 @@ function resetScreenState(n) {
 
 // יציאה מהתיקייה — ניווט דפים אמיתי, לא goTo() פנימי
 function goToNextModule() {
-  window.location.href = '../methodica-math-scale-01-05/index.html';
+  window.location.href = '../methodica-ar-math-scale-01-05/index.html';
 }
 ```
 

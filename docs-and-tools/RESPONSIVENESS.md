@@ -1,4 +1,4 @@
-# Responsiveness — `methodica-math-scale-01`
+# Responsiveness — `methodica-ar-math-scale-01`
 
 The unit renders on a **1280px-wide canvas whose design height is fluid**. The canvas is uniformly
 scaled to fit the viewport; after scaling it exactly fills the viewport height, so the bottom bar —
@@ -7,7 +7,7 @@ On viewports wider than 16:9 the canvas is letterboxed left and right on white.
 
 **Scope: all five components** (`-01` … `-05`). Two CSS values and one function per part.
 
-> **Supersedes** `_methodica-math-scale-01/RESPONSIVITY.md`. That document described the same idea
+> **Supersedes** `_methodica-ar-math-scale-01/RESPONSIVITY.md`. That document described the same idea
 > but covered component **-01 only** and targeted the older **710px** design height. This unit's
 > design height is **720px**. Do not port numbers from it.
 
@@ -246,7 +246,7 @@ that interact with it.
 1. **`scaleApp()` and `s18GetScale()` must compute the same scale.** Both are
    `Math.min(innerWidth / 1280, innerHeight / 720)`. If one changes, change the other, or part 01's
    ruler stops tracking the cursor. The duplication is marked with a comment at
-   `methodica-math-scale-01-01/script.js` above `s18GetScale()`.
+   `methodica-ar-math-scale-01-01/script.js` above `s18GetScale()`.
 2. **`transform-origin: top left`** on `#app` is required by the top-left-anchored transform.
 3. **`top` must stay `0`.** Re-introducing vertical centring reopens the original bug.
 4. **Keep applying `transform` / `left` / `top` as *inline* styles.** `getAppTransform()` in parts
@@ -280,7 +280,7 @@ assets directly.
 > which has already caused one regression on this repo. Verify before committing:
 >
 > ```bash
-> python -c "b=open('methodica-math-scale-01-01/index.html','rb').read(); print(b[:3]==b'\xef\xbb\xbf', b.count(b'\n')-b.count(b'\r\n'))"
+> python -c "b=open('methodica-ar-math-scale-01-01/index.html','rb').read(); print(b[:3]==b'\xef\xbb\xbf', b.count(b'\n')-b.count(b'\r\n'))"
 > ```
 >
 > Expect `True 0` — BOM present, zero LF-only line endings.
@@ -288,7 +288,7 @@ assets directly.
 ## 9. How to re-verify
 
 1. Serve the repo root over HTTP (`python -m http.server 8731`) and open
-   `/methodica-math-scale-01-0N/index.html`.
+   `/methodica-ar-math-scale-01-0N/index.html`.
 2. **The viewport override does not fire `resize`.** After changing the window size, dispatch it
    yourself before measuring, or reload:
    ```js

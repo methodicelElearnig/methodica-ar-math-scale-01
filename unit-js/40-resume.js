@@ -495,7 +495,7 @@ function sendCompletedOnce(ledger, key, objectType, result, opts) {
 
    ⚠️ NAV_EDGE_KEY must carry the unit slug. Two units sharing this key share a ledger and
    silently suppress each other's reports. */
-var NAV_EDGE_KEY = 'lomda_nav_edges::methodica-math-scale-01';
+var NAV_EDGE_KEY = 'lomda_nav_edges::methodica-ar-math-scale-01';
 
 function _readEdges() {
   try {

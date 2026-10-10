@@ -1,4 +1,4 @@
-﻿# Part 05: methodica-math-scale-01-05 (data-screen 0-10, contiguous; TOTAL_SCREENS=11)
+﻿# Part 05: methodica-ar-math-scale-01-05 (data-screen 0-10, contiguous; TOTAL_SCREENS=11)
 
 Scr -Id '01-05-00' -Title 'Recap / lead-in to peak question' -Type 'TransitionScreen (recap variant)' -SourceFile 'index.html' -Selector '#s0'
 Scr -Id '01-05-01' -Title 'Scenario setup — drone patrol dispatched' -Type 'TransitionScreen' -SourceFile 'index.html' -Selector '#s1'

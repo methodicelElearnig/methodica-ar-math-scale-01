@@ -127,8 +127,8 @@ function goToAdvanced() {
   xapiEndComponent({ success: true }, document.getElementById('s35-continue'));
   /* The hop to 04 lives on only for a local walkthrough (DEV_NAV, unit-js/10-identity.js). */
   if (DEV_NAV) {
-    writeForwardState('methodica-math-scale-01-04', '#screen=2');
-    window.location.href = '../methodica-math-scale-01-04/index.html' + window.location.search;
+    writeForwardState('methodica-ar-math-scale-01-04', '#screen=2');
+    window.location.href = '../methodica-ar-math-scale-01-04/index.html' + window.location.search;
   }
 }
 
@@ -202,7 +202,7 @@ var SCREEN_TO_SUBCONTENT = {
   2: ['001', 2]       // class task: type your scale (self-reported, not graded)
 };
 
-var XAPI_COMP_SLUG = 'methodica-math-scale-01-03';
+var XAPI_COMP_SLUG = 'methodica-ar-math-scale-01-03';
 /* Component and item ids must match metadata/*.json byte-for-byte — that convention keeps a
    TRAILING SLASH on unit, component and item ids (but not on question ids). */
 var XAPI_COMP_ID   = XAPI_ID_PREFIX + XAPI_COMP_SLUG + '/';
@@ -295,4 +295,4 @@ function restoreScreenUI(n) {
 
 /* xAPI loader: ../unit-js/50-loader.js. This component supplies its metadata file
    and, where it needs one, an onXapiReady() hook. */
-var XAPI_METADATA_FILE = '../metadata/methodica-math-scale-01-03.json';
+var XAPI_METADATA_FILE = '../metadata/methodica-ar-math-scale-01-03.json';

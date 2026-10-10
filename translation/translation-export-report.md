@@ -1,21 +1,21 @@
-# Translation Export Report — methodica-math-scale-01, Target 01
+# Translation Export Report — methodica-ar-math-scale-01, Target 01
 
 **Module root:** `learning-demo/`
-**Module name:** `methodica-math-scale-01`
+**Module name:** `methodica-ar-math-scale-01`
 **Target:** `01`
 **Parts covered:** `01, 02, 03, 04, 05` (verified against the actual folder structure — see §1)
 **Export type:** First export (no prior XLIFF existed for this target; §7 refresh workflow does not apply)
-**Files:** `methodica-math-scale-01_target-01_he.xlf`, `translation-screen-manifest.csv`, this report
+**Files:** `methodica-ar-math-scale-01_target-01_he.xlf`, `translation-screen-manifest.csv`, this report
 
 ---
 
 ## 1. Discrepancy check against the part list
 
-The requested part list (`01, 02, 04, 05`, later clarified to mean 01–05) was verified against the module root folder listing. **Result: the folder structure has exactly parts 01–05, no gaps, no undocumented extra parts.** `methodica-math-scale-01-01` through `-05` all exist; there is no `-06` and no missing part in the middle.
+The requested part list (`01, 02, 04, 05`, later clarified to mean 01–05) was verified against the module root folder listing. **Result: the folder structure has exactly parts 01–05, no gaps, no undocumented extra parts.** `methodica-ar-math-scale-01-01` through `-05` all exist; there is no `-06` and no missing part in the middle.
 
 Two structural discrepancies from the assumed convention were found and are called out explicitly:
 
-1. **No `js/main.js` per part.** Each part ships a flat `script.js` directly in its own folder root (`methodica-math-scale-01-0N/script.js`), not `js/main.js`. There is no `js/` subfolder anywhere in this module.
+1. **No `js/main.js` per part.** Each part ships a flat `script.js` directly in its own folder root (`methodica-ar-math-scale-01-0N/script.js`), not `js/main.js`. There is no `js/` subfolder anywhere in this module.
 2. **A shared `unit-js/` layer at the module root**, loaded by all five parts' `index.html` (10 files, ~1,195 lines total, see `unit-js/README.md`). This is genuine shared chrome infrastructure that was *not* anticipated by the standard "module-root redirect page" pseudo-part-00 pattern — it owns the report-modal's dropdown labels/placeholder (DOM-mirrored with each part's HTML), viewport scaling, image-zoom plumbing, the resume/state-restore engine, and the boot sequence. It was folded into pseudo-part `00` alongside the module-root `index.html` (screen `01-00-99`) since it is genuinely part of the whole-module chrome, not any single part.
 
 ---
@@ -207,7 +207,7 @@ Confirmed by two independent checks: (1) every file under `translation/` has tod
 
 | File | Purpose |
 |---|---|
-| `methodica-math-scale-01_target-01_he.xlf` | The XLIFF 1.2 export — 950 trans-units, empty targets, UTF-8 no BOM |
+| `methodica-ar-math-scale-01_target-01_he.xlf` | The XLIFF 1.2 export — 950 trans-units, empty targets, UTF-8 no BOM |
 | `translation-screen-manifest.csv` | 57-row screen manifest (`screen_id, screen_title, screen_type, source_file, container_or_selector, manual_review`) |
 | `translation-export-report.md` | This report |
 | `lib.ps1`, `data-00.ps1`…`data-05.ps1`, `build.ps1`, `verify.ps1` | The generation/verification scripts used to build and check the export — kept for reproducibility and for a future refresh pass; not part of the deliverable itself |

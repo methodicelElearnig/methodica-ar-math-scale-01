@@ -7,7 +7,7 @@ Scr -Id '01-00-99' -Title 'Module root — LMS redirect + shared unit-js chrome'
 
 U -ScreenId '01-00-99' -Seq 1 -ElementRole 'other' -ScreenTitle 'Module root — LMS redirect' -ScreenType 'other (redirect + fallback link)' `
   -SourceLocation 'index.html:5' -Source 'יחידות מידה לצורך יישום יחס' `
-  -DeveloperNote 'Page <title> of the module-root LMS-entry redirect page. This page auto-redirects to methodica-math-scale-01-01/ via JS; this title/body only render if JS is slow or blocked.'
+  -DeveloperNote 'Page <title> of the module-root LMS-entry redirect page. This page auto-redirects to methodica-ar-math-scale-01-01/ via JS; this title/body only render if JS is slow or blocked.'
 
 U -ScreenId '01-00-99' -Seq 2 -ElementRole 'body-text' -ScreenTitle 'Module root — LMS redirect' -ScreenType 'other (redirect + fallback link)' `
   -SourceLocation 'index.html:16' -Source 'מעבירים אותך ללומדה… &lt;br /&gt;' `
