@@ -60,9 +60,11 @@ let ddqTargetResults = {};
 
 /* ── End of the component (the platform routes — REPORT-XAPI.md §12) ── */
 function goToNextModule() {
-  /* Last click (s41's check button): report and stop. */
-  var _n = xapiCorrectCount();
-  xapiEndComponent({ success: _n >= 4, score: { scaled: _n / 5 } }, document.getElementById('s41-continue'));
+  /* Last click (s41's check button): report and stop. Score over the 5 declared questions
+     (001 q1, 002 q1+q2, 003 q1+q2) — docs-and-tools/REPORT-XAPI.md §5.
+     MOE 2026-10-08: real score, success only ≥60%, no gate, nothing shown. */
+  var _s = xapiCorrectCount() / 5;
+  xapiEndComponent({ success: _s >= 0.6, score: { scaled: _s } }, document.getElementById('s41-continue'));
   /* The hop to 05 lives on only for a local walkthrough (DEV_NAV, unit-js/10-identity.js). */
   if (DEV_NAV) {
     writeForwardState('methodica-math-scale-01-05', '#screen=5');
@@ -797,7 +799,7 @@ function s40Check() {
     if (input) input.disabled = true;
     fbBold.textContent = 'الإجابة غير دقيقة، هيّا نفهم السبب:​';
     announce('الإجابة غير دقيقة، هيّا نفهم السبب:​');
-    fbReg.innerHTML    = 'קנה המידה הוא 200 : 1, לכן 12 ס״מ בתמונה מייצגים  2,400 ס"מ שהם 24 מטרים במציאות. העמדה צריכה להיות ברבע הדרך, ולכן נחשב <sup>1</sup>/<sub>4</sub> מ-24 מטרים ונקבל 6 מטרים.​';
+    fbReg.innerHTML    = 'مقياس الرسم هو 200 : 1، لذلك 12 سم في الصورة تمثل 2,400 سم أي 24 مترًا في الواقع. يجب أن تكون المحطة في ربع المسافة، لذلك نحسب <sup>1</sup>/<sub>4</sub>الـ 24 مترًا، فنحصل على 6 أمتار.';
     fb.classList.add('s5-fb--incorrect');
     fb.hidden = false;
     btn.disabled    = false;
