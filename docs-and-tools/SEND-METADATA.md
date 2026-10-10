@@ -59,7 +59,7 @@ this is controlled from the **CONFIG** block at the top of the file.
 
 | Metadata | Sent to API |
 |---|---|
-| `id` (full URL) | `uniqueKey` = last path segment (slug), e.g. `methodica-math-scale-01-01` |
+| `id` (full URL) | `uniqueKey` = last path segment (slug), e.g. `methodica-ar-math-scale-01-01` |
 | unit `title` (string) | `title` object `{ "Hebrew": "…" }` (`$TitleLangKey`) |
 | unit — (no manufacture) | `manufacture` = `'methodica'` (`$UnitManufacture`) |
 | component — (missing) | `relativeDifficulty` falls back to component `order`; `depthLevel` to `core-curriculum-basic` — see `$ComponentOverrides` to force per-component values |
@@ -129,8 +129,8 @@ Two mappings are best-guesses and isolated to single config points, so a first-c
 
 ## Verify the result
 
-- `GET /api/v1/content-units/methodica-math-scale-01` returns the unit with
-  its components; spot-check `GET /api/v1/components/methodica-math-scale-01-01`
+- `GET /api/v1/content-units/methodica-ar-math-scale-01` returns the unit with
+  its components; spot-check `GET /api/v1/components/methodica-ar-math-scale-01-01`
   and one item.
 - In the Kata UI: **יחידות תוכן** (`/author`).
 - Re-run once — every entity should report `UPDATED` (not duplicated).

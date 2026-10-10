@@ -13,7 +13,7 @@ $here = Split-Path -Parent $MyInvocation.MyCommand.Path
 function PartFolder([string]$screenId) {
     $part = $screenId.Substring(3,2)
     if ($part -eq '00') { return '' }  # module root — source-location already file-relative
-    return "methodica-math-scale-01-$part/"
+    return "methodica-ar-math-scale-01-$part/"
 }
 
 # ---------- Validate IDs are unique ----------
@@ -81,7 +81,7 @@ foreach ($partGroup in $byPart) {
 }
 [void]$sb.AppendLine('</xliff>')
 
-$xliffPath = Join-Path $here 'methodica-math-scale-01_target-01_he.xlf'
+$xliffPath = Join-Path $here 'methodica-ar-math-scale-01_target-01_he.xlf'
 [System.IO.File]::WriteAllText($xliffPath, $sb.ToString(), (New-Object System.Text.UTF8Encoding($false)))
 Write-Host "Wrote XLIFF: $xliffPath ($($global:Units.Count) units)"
 

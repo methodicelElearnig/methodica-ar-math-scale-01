@@ -105,8 +105,8 @@ API block plus `stateLastResult720()`; nothing else differs. Three functions on 
    שונה"*), the platform launches each part on its own, and since 2026-09-16 no part copies its
    query into another — so every part reads and writes **its own** document (§7a). Absent → `null`.
 2. **Activity id** — `window.XAPI_UNIT_ID`, set identically in all five parts at
-   [script.js:9](methodica-math-scale-01-01/script.js:9):
-   `https://…/math/scale/01/methodica-math-scale-01/`. Kata never sees it; it only keys the
+   [script.js:9](methodica-ar-math-scale-01-01/script.js:9):
+   `https://…/math/scale/01/methodica-ar-math-scale-01/`. Kata never sees it; it only keys the
    `localStorage` fallback below. The trailing slash still matters for *reporting*
    ([REPORT-XAPI.md §1](REPORT-XAPI.md)).
 3. **State id** — `RESUME_STATE_ID = 'execution-state::<slug>'` (v5). Also fallback-only, for the
@@ -194,7 +194,7 @@ Three of those steps are load-bearing and non-obvious:
 `restoreScreenUI(n)` dispatches to per-screen `sNNRestoreUI()` functions. They are **standalone** —
 no `sNNSubmit` was refactored. Each mirrors only the DOM writes of its submit branches: never a
 state mutation, never a statement, never `announce()`, never `s18QuizResults` or
-`finalAssessmentScore`. `sqRestoreUI()` in part 01 ([01:727](methodica-math-scale-01-01/script.js:727))
+`finalAssessmentScore`. `sqRestoreUI()` in part 01 ([01:727](methodica-ar-math-scale-01-01/script.js:727))
 already worked this way and is the model.
 
 Every painter follows two axes, not four branches:

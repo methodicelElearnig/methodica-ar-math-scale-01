@@ -22,7 +22,7 @@ everything else stayed byte-identical. All 6 files re-parsed clean afterwards.
 
 ```
 - "id": "https://lomdot.education.gov.il/metodica/720active/math/scale/01/"
-+ "id": "https://lomdot.education.gov.il/metodica/720active/math/scale/01/methodica-math-scale-01/"
++ "id": "https://lomdot.education.gov.il/metodica/720active/math/scale/01/methodica-ar-math-scale-01/"
 ```
 
 **Why.** Kata derives `uniqueKey` from the last path segment of the id. The original id stopped at
@@ -34,7 +34,7 @@ and the science unit confirms it:
 |---|---|---|
 | science (accepted by the live API) | `…/science/mass-measure/01/methodica-science-mass-measure-01` | `methodica-science-mass-measure-01` |
 | math, before | `…/math/scale/01/` | `01` ❌ |
-| math, after | `…/math/scale/01/methodica-math-scale-01/` | `methodica-math-scale-01` ✅ |
+| math, after | `…/math/scale/01/methodica-ar-math-scale-01/` | `methodica-ar-math-scale-01` ✅ |
 
 `learningUnitId` was updated to the same value in all 5 component files. Only the exact
 full-prefix value was replaced — component and item ids, which merely *start* with that prefix,
@@ -45,9 +45,9 @@ components are not nested under the unit id. This matches the science unit's sha
 
 | Level | Shape | Trailing slash |
 |---|---|---|
-| unit | `<prefix>methodica-math-scale-01/` | yes |
-| component | `<prefix>methodica-math-scale-01-0N/` | yes |
-| item | `<component>methodica-math-scale-01-0N-NNN/` | yes |
+| unit | `<prefix>methodica-ar-math-scale-01/` | yes |
+| component | `<prefix>methodica-ar-math-scale-01-0N/` | yes |
+| item | `<component>methodica-ar-math-scale-01-0N-NNN/` | yes |
 | question | `<item>qN` | no |
 
 ## 2. Controlled-vocabulary spelling — 35 values
@@ -168,7 +168,7 @@ items), exit code 0.
   levels the inherited comment described as blocked are live.
 
 **The lomda runtime** — `window.XAPI_UNIT_ID` in all five `script.js` files changed from
-`XAPI_ID_PREFIX` to `XAPI_ID_PREFIX + 'methodica-math-scale-01/'`, to keep matching the corrected
+`XAPI_ID_PREFIX` to `XAPI_ID_PREFIX + 'methodica-ar-math-scale-01/'`, to keep matching the corrected
 unit id. Re-verified in a browser afterwards: component, item and question ids are unchanged and
 still match metadata exactly, `window.XAPI_UNIT_ID === UNIT_METADATA.id`, and a unit-scope
 statement targets the corrected id. `XAPI_ID_PREFIX` itself was **not** changed — it is the folder

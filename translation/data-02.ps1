@@ -1,4 +1,4 @@
-﻿# Part 02: methodica-math-scale-01-02 (data-screen 0-8, contiguous; TOTAL_SCREENS=9)
+﻿# Part 02: methodica-ar-math-scale-01-02 (data-screen 0-8, contiguous; TOTAL_SCREENS=9)
 # Bare-numeric dropdown option values with no attached unit word (screens 1,2,5) are EXCLUDED
 # per the extraction agent's classification — listed in the export report's Excluded section,
 # not as XLIFF units. Screen 5's "כפל"/"חילוק" dropdown IS included: it is Hebrew-language answer

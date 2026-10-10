@@ -600,7 +600,7 @@ var SCREEN_TO_SUBCONTENT = {
   10: null           // unit finale
 };
 
-var XAPI_COMP_SLUG = 'methodica-math-scale-01-05';
+var XAPI_COMP_SLUG = 'methodica-ar-math-scale-01-05';
 /* Component and item ids must match metadata/*.json byte-for-byte — that convention keeps a
    TRAILING SLASH on unit, component and item ids (but not on question ids). */
 var XAPI_COMP_ID   = XAPI_ID_PREFIX + XAPI_COMP_SLUG + '/';
@@ -913,10 +913,10 @@ function s51RestoreUI() {
 
 /* xAPI loader: ../unit-js/50-loader.js. This component supplies its metadata file
    and, where it needs one, an onXapiReady() hook. */
-var XAPI_METADATA_FILE = '../metadata/methodica-math-scale-01-05.json';
+var XAPI_METADATA_FILE = '../metadata/methodica-ar-math-scale-01-05.json';
 
 /* Terminal component: load the unit metadata so the unit 'completed' can resolve its
    object id when the learner reaches the finale. */
 function onXapiReady() {
-  loadUnitMetadata('../metadata/methodica-math-scale-01_unit.json', function () {});
+  loadUnitMetadata('../metadata/methodica-ar-math-scale-01_unit.json', function () {});
 }

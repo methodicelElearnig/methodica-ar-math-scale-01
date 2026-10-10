@@ -31,7 +31,7 @@ const BASE     = process.argv[2] || path.join(__dirname, '..');
    no _test/. This harness's own stub is not content, so it resolves from here — otherwise a
    package run throws at load rather than running. Same reasoning as verify-report.js. */
 const HARNESS_DIR = __dirname;
-const UNIT     = 'methodica-math-scale-01';
+const UNIT     = 'methodica-ar-math-scale-01';
 const PART_DIR = c => UNIT + '-' + c;
 
 const failures = [];

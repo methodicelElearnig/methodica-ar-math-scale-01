@@ -1,7 +1,7 @@
 # Adding xAPI (720) reporting to a unit
 
 How to instrument a 720 לומדה so it reports learner activity to Kata. Written as a working guide for
-the **next** unit; `methodica-math-scale-01` is the reference implementation throughout, and every
+the **next** unit; `methodica-ar-math-scale-01` is the reference implementation throughout, and every
 concrete id, count and denominator below is *its* value — yours will differ.
 
 Companion: **[REPORT-ISSUE.md](REPORT-ISSUE.md)** for the "מצאתם בעיה?" learner problem-report
@@ -174,7 +174,7 @@ The denominator should be **what the learner was promised**, not the metadata qu
 this unit part 01 promises "4 מתוך 5", and screens 19–20 are parts א/ב of one exercise — so the
 denominator is 5 exercises, not 11 questions.
 
-Reference values from `methodica-math-scale-01`:
+Reference values from `methodica-ar-math-scale-01`:
 
 | Part | Rule |
 |---|---|
@@ -279,7 +279,7 @@ Instrumenting a unit forces you to map every screen to a catalog item, which rel
 mismatches between what metadata promises and what the code does. Report them; do not silently
 patch metadata to match code or vice versa — deciding which is right is a content call.
 
-The three still open in `methodica-math-scale-01`:
+The three still open in `methodica-ar-math-scale-01`:
 
 1. **Part 04 metadata item `005`** ("מסך חיזוק לאחר ניסיון לא מוצלח") **has no screen in the code.**
    `s42Enter()`/`s42Check()` exist but `TOTAL_SCREENS` is 6, `resetScreenState` maps only 0–5, and
@@ -440,7 +440,7 @@ components, which nothing currently defines.
 
 ---
 
-## 11. Reference — `methodica-math-scale-01` as built
+## 11. Reference — `methodica-ar-math-scale-01` as built
 
 | Part | Items | Questions | `answered` sites | `requested` | Component `completed` fires in |
 |---|---|---|---|---|---|

@@ -2,7 +2,7 @@
 
 How to wire the learner-facing problem-report feature in a 720 לומדה: the flag button, the modal,
 and the transport that delivers a report to a Google Form. Written as a working guide for the
-**next** unit; `methodica-math-scale-01` is the reference implementation.
+**next** unit; `methodica-ar-math-scale-01` is the reference implementation.
 
 Companion: **[REPORT-XAPI.md](REPORT-XAPI.md)**. The two features are independent, but this one
 reads `window.METADATA`, which the xAPI metadata layer provides — see §6.
@@ -128,7 +128,7 @@ context.
 - [ ] Works with **no `?slxapi`** on the URL (`XAPI_DISABLED` true).
 - [ ] A forced network failure still closes the modal and does not interrupt the learner.
 
-## 8. Reference — `methodica-math-scale-01` as built
+## 8. Reference — `methodica-ar-math-scale-01` as built
 
 Form endpoint: `1FAIpQLSfFq5XFtH1pPpLgV5RWT4m3NanYPW5GKremqTvkp6zKjEGqcw`
 (defined **once** for the whole unit, in `unit-js/25-report.js`).

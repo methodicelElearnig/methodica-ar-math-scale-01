@@ -67,8 +67,8 @@ function goToNextModule() {
   xapiEndComponent({ success: _s >= 0.6, score: { scaled: _s } }, document.getElementById('s41-continue'));
   /* The hop to 05 lives on only for a local walkthrough (DEV_NAV, unit-js/10-identity.js). */
   if (DEV_NAV) {
-    writeForwardState('methodica-math-scale-01-05', '#screen=5');
-    window.location.href = '../methodica-math-scale-01-05/index.html' + window.location.search;
+    writeForwardState('methodica-ar-math-scale-01-05', '#screen=5');
+    window.location.href = '../methodica-ar-math-scale-01-05/index.html' + window.location.search;
   }
 }
 
@@ -1148,7 +1148,7 @@ var SCREEN_TO_SUBCONTENT = {
      component — see REPORTING-ADDING.md. Nothing maps to it. */
 };
 
-var XAPI_COMP_SLUG = 'methodica-math-scale-01-04';
+var XAPI_COMP_SLUG = 'methodica-ar-math-scale-01-04';
 /* Component and item ids must match metadata/*.json byte-for-byte — that convention keeps a
    TRAILING SLASH on unit, component and item ids (but not on question ids). */
 var XAPI_COMP_ID   = XAPI_ID_PREFIX + XAPI_COMP_SLUG + '/';
@@ -1507,4 +1507,4 @@ function s39RestoreUI() {
 
 /* xAPI loader: ../unit-js/50-loader.js. This component supplies its metadata file
    and, where it needs one, an onXapiReady() hook. */
-var XAPI_METADATA_FILE = '../metadata/methodica-math-scale-01-04.json';
+var XAPI_METADATA_FILE = '../metadata/methodica-ar-math-scale-01-04.json';

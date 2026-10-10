@@ -2233,11 +2233,11 @@ function routeAfterQuiz() {
   if (DEV_NAV) {
     var _q = window.location.search;
     if (_n >= 4) {
-      writeForwardState('methodica-math-scale-01-03', '#screen=23');
-      window.location.href = '../methodica-math-scale-01-03/index.html' + _q;
+      writeForwardState('methodica-ar-math-scale-01-03', '#screen=23');
+      window.location.href = '../methodica-ar-math-scale-01-03/index.html' + _q;
     } else {
-      writeForwardState('methodica-math-scale-01-02', '#screen=23');
-      window.location.href = '../methodica-math-scale-01-02/index.html' + _q;
+      writeForwardState('methodica-ar-math-scale-01-02', '#screen=23');
+      window.location.href = '../methodica-ar-math-scale-01-02/index.html' + _q;
     }
   }
 }
@@ -2292,7 +2292,7 @@ var SCREEN_TO_SUBCONTENT = {
   23: ['009', 1]      // quiz 5
 };
 
-var XAPI_COMP_SLUG = 'methodica-math-scale-01-01';
+var XAPI_COMP_SLUG = 'methodica-ar-math-scale-01-01';
 /* Component and item ids must match metadata/*.json byte-for-byte — that convention keeps a
    TRAILING SLASH on unit, component and item ids (but not on question ids). */
 var XAPI_COMP_ID   = XAPI_ID_PREFIX + XAPI_COMP_SLUG + '/';
@@ -2760,12 +2760,12 @@ function s23RestoreUI() {
 
 /* xAPI loader: ../unit-js/50-loader.js. This component supplies its metadata file
    and, where it needs one, an onXapiReady() hook. */
-var XAPI_METADATA_FILE = '../metadata/methodica-math-scale-01-01.json';
+var XAPI_METADATA_FILE = '../metadata/methodica-ar-math-scale-01-01.json';
 
 /* Entry component. The unit metadata is still loaded (UNIT_METADATA feeds the bug-report form);
    the unit-scope 'initialized' that used to follow it is gone since 2026-09-16 — v2.5/v2.7 define
    object as item or component only, and the platform derives unit state itself
    (REPORT-XAPI.md §12). */
 function onXapiReady() {
-  loadUnitMetadata('../metadata/methodica-math-scale-01_unit.json', function () {});
+  loadUnitMetadata('../metadata/methodica-ar-math-scale-01_unit.json', function () {});
 }

@@ -19,7 +19,7 @@ const puppeteer = require('puppeteer-core');
 const ROOT = path.resolve(__dirname, '..');
 const BASE_ARG = process.argv[2];
 const CHROME = process.env.CHROME || 'C:/Program Files/Google/Chrome/Application/chrome.exe';
-const P = 'methodica-math-scale-01-';
+const P = 'methodica-ar-math-scale-01-';
 
 let pass = 0; const failures = [];
 const ok = (scope, name, cond, detail) => { if (cond) pass++; else failures.push('  [' + scope + '] ' + name + (detail ? '\n      -> ' + detail : '')); };

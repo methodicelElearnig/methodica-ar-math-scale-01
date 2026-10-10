@@ -1,4 +1,4 @@
-﻿# Part 01: methodica-math-scale-01-01 (data-screen 0-4,6-12,14-23; TOTAL_SCREENS=24 but 5 and 13 are
+﻿# Part 01: methodica-ar-math-scale-01-01 (data-screen 0-4,6-12,14-23; TOTAL_SCREENS=24 but 5 and 13 are
 # missing from the HTML by design — dead script.js logic for both is captured under 01-01-99 with
 # manual-review flags, per instructions to list rather than silently drop.)
 

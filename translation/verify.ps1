@@ -14,7 +14,7 @@ $root = Split-Path -Parent $here
 function PartFolderPath([string]$screenId) {
     $part = $screenId.Substring(3,2)
     if ($part -eq '00') { return $root }
-    return (Join-Path $root "methodica-math-scale-01-$part")
+    return (Join-Path $root "methodica-ar-math-scale-01-$part")
 }
 
 $fileCache = @{}
@@ -157,7 +157,7 @@ foreach ($u in $global:Units) {
     # also add smaller fragments split by common separators so partial containment checks work later
 }
 
-$partFolders = @('') + (1..5 | ForEach-Object { "methodica-math-scale-01-0$_" })
+$partFolders = @('') + (1..5 | ForEach-Object { "methodica-ar-math-scale-01-0$_" })
 $uncovered = New-Object System.Collections.Generic.List[object]
 $checkedFragments = 0
 

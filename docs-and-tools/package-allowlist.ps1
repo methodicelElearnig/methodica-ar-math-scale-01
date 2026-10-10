@@ -42,8 +42,9 @@
       3. $ExcludeExt gains .bat and .test (preview.bat, script.js.test).
       4. $ExcludeRelPaths names 11 files nothing loads.
 
-    Note $ComponentGlob: the ratio value 'methodica-math-*-[0-9][0-9]' DOES match this
-    unit, unlike the science units. It is spelled out below anyway.
+    Note $ComponentGlob: the Hebrew ratio value 'methodica-math-*-[0-9][0-9]' does NOT match
+    this Arabic unit (folders are methodica-ar-math-scale-01-0N), so it is spelled out exactly
+    below — the same approach as methodica-ar-science-mass-measure-01.
 
     It ships NO root files (rule set 28.09.26 for all 720 units; Documentation/
     reporting-and-resume/ADDING-REPORTING-AND-RESUME.md §5.2). Platforms launch every component
@@ -81,21 +82,21 @@ $ExcludeUnderscoreSegment = $true
 #    a colour or a screen index. A missing image costs more than its bytes.
 $ExcludeRelPaths = @(
     # raw AI-generation output, name never cleaned up
-    'methodica-math-scale-01-01/assets/images/ChatGPT Image Jul 27, 2026, 11_36_45 AM.png',
+    'methodica-ar-math-scale-01-01/assets/images/ChatGPT Image Jul 27, 2026, 11_36_45 AM.png',
     # literal " - Copy" leftover beside the file it duplicates
-    'methodica-math-scale-01-01/assets/images/Tel Aviv Map - Copy.jpg',
+    'methodica-ar-math-scale-01-01/assets/images/Tel Aviv Map - Copy.jpg',
     # component 02's only runtime pattern is Character*; these three are unreachable there
-    'methodica-math-scale-01-02/assets/images/Tel Aviv Map.jpg',
-    'methodica-math-scale-01-02/assets/images/Bed Room.jpg',
-    'methodica-math-scale-01-02/assets/images/Architacture plan.jpg',
+    'methodica-ar-math-scale-01-02/assets/images/Tel Aviv Map.jpg',
+    'methodica-ar-math-scale-01-02/assets/images/Bed Room.jpg',
+    'methodica-ar-math-scale-01-02/assets/images/Architacture plan.jpg',
     # component 04's preload loop is c + '.png' only — it has no _workout variant
-    'methodica-math-scale-01-04/assets/images/Character1_workout.png',
-    'methodica-math-scale-01-04/assets/images/Character2_workout.png',
+    'methodica-ar-math-scale-01-04/assets/images/Character1_workout.png',
+    'methodica-ar-math-scale-01-04/assets/images/Character2_workout.png',
     # component 04 contains zero occurrences of "videos", "GIF" or ".mp4" in its html/js/css
-    'methodica-math-scale-01-04/assets/videos/Character1 GIF Happy.mp4',
-    'methodica-math-scale-01-04/assets/videos/Character1 GIF Sad.mp4',
-    'methodica-math-scale-01-04/assets/videos/Character2 GIF Happy.mp4',
-    'methodica-math-scale-01-04/assets/videos/Character2 GIF Sad.mp4'
+    'methodica-ar-math-scale-01-04/assets/videos/Character1 GIF Happy.mp4',
+    'methodica-ar-math-scale-01-04/assets/videos/Character1 GIF Sad.mp4',
+    'methodica-ar-math-scale-01-04/assets/videos/Character2 GIF Happy.mp4',
+    'methodica-ar-math-scale-01-04/assets/videos/Character2 GIF Sad.mp4'
 )
 
 # ── What each shipped area contributes ──
@@ -111,7 +112,7 @@ $UnitDirs = @{
 #    ⚠️ canvas-tall-gate.js is load-bearing. index.html loads it BEFORE script.js
 #    (<script src="canvas-tall-gate.js?v=1">), and it wraps the shared scaleApp().
 $ComponentFiles = @('index.html', 'script.js', 'styles.css', 'canvas-tall-gate.js')
-$ComponentGlob  = 'methodica-math-scale-01-[0-9][0-9]'
+$ComponentGlob  = 'methodica-ar-math-scale-01-[0-9][0-9]'
 
 # ── Hygiene: if any of these turn up INSIDE a package, it is unsafe to upload ──
 $SecretPatterns = @('*key*', '*.ps1', '*.log', '*.bat', 'index_dev.html', 'README.md', '.git*', '_*')

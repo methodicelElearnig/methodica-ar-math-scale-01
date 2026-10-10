@@ -96,7 +96,7 @@ $UnitManufacture = 'methodica'
 $DefaultDepthLevel = 'core-curriculum-basic'
 # Optional per-component overrides, keyed by uniqueKey (URL slug). An override
 # WINS over the metadata value; unlisted components use their metadata value.
-#   e.g. 'methodica-math-scale-01-05' = @{ relativeDifficulty = 4; depthLevel = 'core-curriculum-advanced' }
+#   e.g. 'methodica-ar-math-scale-01-05' = @{ relativeDifficulty = 4; depthLevel = 'core-curriculum-advanced' }
 $ComponentOverrides = @{
 }
 
@@ -356,7 +356,7 @@ function New-UnitBody {
     $unitKey = Get-Slug $Unit.id
     if ($unitKey -notmatch '^methodica-') {
         throw ("Unit uniqueKey resolves to '$unitKey' from id '$($Unit.id)' — expected a slug like " +
-               "'methodica-math-scale-01'. The unit id must end with the unit slug, not the folder number.")
+               "'methodica-ar-math-scale-01'. The unit id must end with the unit slug, not the folder number.")
     }
 
     # targetSector / targetAudience: validated rather than forwarded blind.

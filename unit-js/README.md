@@ -1,7 +1,7 @@
 # `unit-js/` — the shared layer
 
 One copy of every behaviour that is the same in all five components of this unit. Each
-`methodica-math-scale-01-0N/script.js` keeps only that component's configuration and screen logic,
+`methodica-ar-math-scale-01-0N/script.js` keeps only that component's configuration and screen logic,
 and fills in the hook contract below.
 
 Companions: [RESUME.md](../RESUME.md) · [REPORT-XAPI.md](../REPORT-XAPI.md) ·
@@ -110,7 +110,7 @@ last-wins overwrite** — and `script.js` loads *after* the shared files, so a l
 copy wins and the extraction looks successful while shipping the old code. Check it:
 
 ```bash
-node -e "const fs=require('fs');const s=new Map();fs.readdirSync('unit-js').filter(f=>f.endsWith('.js')).forEach(f=>fs.readFileSync('unit-js/'+f,'utf8').split('\n').forEach(l=>{const m=l.match(/^(?:function|var|let|const)\s+([A-Za-z0-9_$]+)/);if(m)s.set(m[1],f)}));['01','02','03','04','05'].forEach(p=>{const h=[];fs.readFileSync('methodica-math-scale-01-'+p+'/script.js','utf8').split('\n').forEach((l,i)=>{const m=l.match(/^(?:function|var|let|const)\s+([A-Za-z0-9_$]+)/);if(m&&s.has(m[1]))h.push(m[1]+'@'+(i+1))});console.log(p+': '+(h.length?h.join(', '):'clean'))})"
+node -e "const fs=require('fs');const s=new Map();fs.readdirSync('unit-js').filter(f=>f.endsWith('.js')).forEach(f=>fs.readFileSync('unit-js/'+f,'utf8').split('\n').forEach(l=>{const m=l.match(/^(?:function|var|let|const)\s+([A-Za-z0-9_$]+)/);if(m)s.set(m[1],f)}));['01','02','03','04','05'].forEach(p=>{const h=[];fs.readFileSync('methodica-ar-math-scale-01-'+p+'/script.js','utf8').split('\n').forEach((l,i)=>{const m=l.match(/^(?:function|var|let|const)\s+([A-Za-z0-9_$]+)/);if(m&&s.has(m[1]))h.push(m[1]+'@'+(i+1))});console.log(p+': '+(h.length?h.join(', '):'clean'))})"
 ```
 
 Hook names are the expected exceptions.

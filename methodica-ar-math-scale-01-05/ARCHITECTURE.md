@@ -13,7 +13,7 @@
 ## מבנה קבצים
 
 ```
-methodica-math-scale-01-05/
+methodica-ar-math-scale-01-05/
 ├── index.html          ← כל 11 המסכים, single-page
 ├── index_dev.html      ← עוטף index.html ב-iframe, מוסיף סרגל ניווט למסכים (dev-only)
 ├── styles.css          ← כל הסטיילים
