@@ -1,7 +1,7 @@
 #Requires -Version 7.0
 <#
 .SYNOPSIS
-    Send the metadata/ folder (1 unit + 5 components + their items) to the Kata
+    Send the metadata/ folder (5 Arabic components + 21 items, under the existing Hebrew unit) to the Kata
     (Katalog) catalog API at https://kata.cet.ac.il/api/v1.
 
 .DESCRIPTION
@@ -26,19 +26,21 @@
     Override the API base URL (default https://kata.cet.ac.il).
 
 .PARAMETER MetadataDir
-    Override the metadata folder (default: the metadata/ folder next to this script).
+    Override the metadata folder (default: the metadata/ folder at the repo root, one
+    level up from this script's docs-and-tools/ home).
 
 .EXAMPLE
-    pwsh -File send-metadata.ps1 -DryRun
+    pwsh -File docs-and-tools/send-metadata.ps1 -DryRun
 .EXAMPLE
-    pwsh -File send-metadata.ps1
+    pwsh -File docs-and-tools/send-metadata.ps1
 #>
 [CmdletBinding()]
 param(
     [switch] $DryRun,
     [string] $ApiKey,
     [string] $BaseUrl,
-    [string] $MetadataDir
+    [string] $MetadataDir,
+    [string] $ParentUnitKey
 )
 
 # ============================================================================
@@ -60,18 +62,26 @@ param(
 # NEVER hard-code it here — this script is committed. It is resolved at runtime, in
 # order, from: the -ApiKey parameter, the KATA_API_KEY environment variable, or the
 # git-ignored key file below (one line, just the key). See SEND-METADATA.md.
-# Repo root is one level up: this script lives in docs-and-tools/, while the
-# key file, metadata/, and the log all stay at the repo root.
-$RepoRoot = Split-Path $PSScriptRoot -Parent
-$ApiKeyFile = Join-Path $RepoRoot 'kata-api-key.txt'
+$ApiKeyFile = Join-Path $PSScriptRoot 'kata-api-key.txt'
 # API base URL (override at launch with -BaseUrl).
 if (-not $BaseUrl) { $BaseUrl = 'https://kata.cet.ac.il' }
-# Metadata folder to send (override with -MetadataDir). Defaults to repo root's ./metadata.
-if (-not $MetadataDir) { $MetadataDir = Join-Path $RepoRoot 'metadata' }
-# Run log (git-ignored via *.log).
-$LogFile = Join-Path $RepoRoot 'send-metadata.log'
+# Metadata folder to send (override with -MetadataDir). This script lives in
+# docs-and-tools/, so the default sits one level up, at the repo root.
+if (-not $MetadataDir) { $MetadataDir = Join-Path $PSScriptRoot '..\metadata' }
+# Run log (git-ignored by name).
+$LogFile = Join-Path $PSScriptRoot 'send-metadata.log'
 
 # ── (2) PER-UNIT — usually fine as-is ───────────────────────────────────────
+# PARENT UNIT — the Arabic components join the EXISTING Hebrew unit; there is no Arabic unit
+# in KATA. KATA binds a learning objective to exactly one unit (a separate Arabic unit got
+# 409 "objective already bound to a unit (strict 1:1)"), and the KATA team's instruction
+# (2026-09-25) is to add the Arabic components to the existing unit.
+#
+# When set, the unit is READ-ONLY: one GET confirms it exists, *_unit.json is not read, and
+# no POST/PATCH ever goes to the unit — a PATCH here would overwrite the Hebrew unit's title,
+# sectors and audience with this repo's values. Components are created under this key.
+# -ParentUnitKey '' restores the original behaviour (upsert this repo's own *_unit.json).
+if (-not $PSBoundParameters.ContainsKey('ParentUnitKey')) { $ParentUnitKey = 'methodica-math-scale-01' }
 # Where the CONTENT is served from, for hostedContentRef — the field Kata launches the
 # component from. It must resolve.
 #
@@ -85,18 +95,21 @@ $LogFile = Join-Path $RepoRoot 'send-metadata.log'
 # one, for every component of this unit.
 #
 # Take this from the unit's own DEPLOY.md deploy target. No trailing slash.
-$ContentBaseUrl = 'https://lomdot.education.gov.il/metodica/720/math/scale/01'
+# Arabic unit: served under /720/ar/ (the Hebrew source is served from /720/math/scale/01).
+$ContentBaseUrl = 'https://lomdot.education.gov.il/metodica/720/ar/math/scale/01'
 # Title language key: wraps a string title into the API object, e.g.
 #   "מדידת מסה" -> { "Hebrew": "מדידת מסה" }. Change only for non-Hebrew content.
-$TitleLangKey = 'Hebrew'
-# Manufacture value sent on the unit (the metadata unit file carries none).
-$UnitManufacture = 'methodica'
+# Arabic unit — the same word the component metadata uses in `languages`.
+$TitleLangKey = 'Arabic'
+# NOTE: there is no $UnitManufacture any more. 720 v2.5 renamed the field to
+# `manufacturer` and moved it to the unit, and KATA does not accept it on any endpoint —
+# the owning provider is derived from the API key. See New-UnitBody.
 # Fallback depthLevel — used ONLY if a component's metadata omits it (components
 # normally carry their own relativeDifficulty / depthLevel / cognitiveLevel).
 $DefaultDepthLevel = 'core-curriculum-basic'
 # Optional per-component overrides, keyed by uniqueKey (URL slug). An override
 # WINS over the metadata value; unlisted components use their metadata value.
-#   e.g. 'methodica-ar-math-scale-01-05' = @{ relativeDifficulty = 4; depthLevel = 'core-curriculum-advanced' }
+#   e.g. 'methodica-science-mass-measure-02-05' = @{ relativeDifficulty = 4; depthLevel = 'core-curriculum-advanced' }
 $ComponentOverrides = @{
 }
 
@@ -123,8 +136,8 @@ $ContentTypeMap = @{
 # 3c. cognitiveLevel: metadata value -> official MOE code — SUBJECT-SPECIFIC.
 #     KATA validates against GET /api/v1/cognitive-levels. The codes turned out to
 #     be kebab-case slugs identical to what the metadata stores, so this map only
-#     translates the pre-v2.3 Title Case labels; a different subject (e.g. math)
-#     has a different code set, so replace $ValidCognitiveLevel when reusing.
+#     translates the pre-v2.3 Title Case labels. $ValidCognitiveLevel below holds
+#     every code KATA has, across both disciplines, so reuse needs no edit.
 $CognitiveLevelMap = @{
     'Identifying'                    = 'identifying'                    # זיהוי
     'Describing'                     = 'describing'                     # תיאור
@@ -139,40 +152,18 @@ $CognitiveLevelMap = @{
     'Synthesizing'                   = 'synthesizing'                    # סינתזה — NOT in KATA yet
     'Evaluating and Justifying'      = 'evaluating-and-justifying'        # הערכה והצדקה — NOT in KATA yet
 }
-# The SCIENCE codes KATA actually holds — verified live 2026-07-25 via
-# GET /api/v1/cognitive-levels (12 codes total: 8 `science` plus 4 `mathematics`).
-# THIS UNIT IS MATHEMATICS, so the four `mathematics` codes are the relevant ones; the
-# science codes are kept because the endpoint accepts them and a shared unit could use them.
+# The codes KATA actually holds — VERIFIED live against GET /api/v1/cognitive-levels on
+# 2026-08-16: 16 codes, 12 `science` plus 4 `mathematics`.
 #
-# ⚠️ VOCABULARY MISMATCH — the metadata/ files in this repo currently carry word-reversed
-#    spellings that the API will reject with 422 "code does not exist", e.g.
-#        metadata says            KATA/720 vocabulary
-#        thinking-algorithmic  -> algorithmic-thinking
-#        content-interactive   -> interactive-content
-#        basic-curriculum-core -> core-curriculum-basic
-#        advanced-curriculum-core -> core-curriculum-advanced
-#        exercise-solved       -> solved-exercise
-#        task-inquiry-or-project  -> project-or-inquiry-task
-#    The lists here deliberately hold the LIVE vocabulary rather than the metadata's, so that
-#    `send-metadata.ps1 -DryRun` names every offending value instead of failing later against
-#    the real API. Confirm the canonical spelling with CET, fix metadata/, then push.
+# THIS UNIT IS MATHEMATICS, so the four `mathematics` codes are the relevant ones; the twelve
+# science codes are retained because the endpoint accepts them and a shared or
+# cross-subject unit could use them.
 #
-# VERIFIED against GET /api/v1/cognitive-levels on 2026-08-05 — 16 codes live, 4 mathematics and
-# 12 science. The mathematics four, with their Hebrew titles:
-#     algorithmic-thinking         חשיבה אלגוריתמית      (Algorithmic Thinking)
-#     process-thinking             חשיבה תהליכית          (Procedural Thinking)
-#     interpretation-and-reasoning חיפוש פתוח והנמקה      (Open Interpretation and Reasoning)
-#     knowledge-and-recall         ידע וזיהוי             (Knowledge and Recognition)
-# Note 'interpretation-and-reasoning' — NOT 'reasoning-and-interpretation', which is what this
-# repo's metadata originally carried (the same word-order fault as the rest; see METADATA-FIXES.md).
+# All 12 science levels from 720 v2.2 pp.17-18 are live. An older note in this script's
+# lineage claimed only 8 were loaded and that `analyzing` / `evaluating-and-justifying`
+# would 422; that is stale — this unit uses both and they are confirmed present.
 $ValidCognitiveLevel = @(
-    # mathematics — used by this unit
-    'algorithmic-thinking'
-    'process-thinking'
-    'interpretation-and-reasoning'
-    'knowledge-and-recall'
-    # science — retained for cross-subject reuse. All 12 are live as of the 2026-08-05 check
-    # (the four that used to 422 have since been released).
+    # science — used by this unit
     'identifying'
     'describing'
     'retrieving-information'
@@ -185,18 +176,25 @@ $ValidCognitiveLevel = @(
     'synthesizing'
     'evaluating-and-justifying'
     'providing-scientific-reasoning'
+    # mathematics — retained for cross-subject reuse. Note the word order of
+    # 'interpretation-and-reasoning' (NOT 'reasoning-and-interpretation').
+    'algorithmic-thinking'
+    'process-thinking'
+    'interpretation-and-reasoning'
+    'knowledge-and-recall'
 )
-# 720 science levels that exist in the spec but NOT in KATA — used only to give a
-# clearer error than "unmapped value" when the metadata legitimately uses one.
-# Empty as of the 2026-08-05 check: the four science levels that used to 422 are now live and have
-# moved up into $ValidCognitiveLevel. Kept as a mechanism — if a future spec level is not yet
-# loaded in KATA, list it here to get a clear message instead of "unknown value".
+# Spec levels that exist in 720 but are NOT loaded in KATA — used only to give a clearer
+# error than "unmapped value" when the metadata legitimately uses one. Empty as of the
+# 2026-08-16 check. Kept as a mechanism: if a future spec level is not yet loaded, list it
+# here to get an explanatory message instead of a bare "unknown value".
 $PendingCognitiveLevel = @()
 
 # ── (4) 720 STANDARD ENUMS — rarely change (mirror the KATA spec) ────────────
 # Used to fail fast on any value that maps outside the standard vocabulary.
-# NOTE: these are kebab-case, matching what the live API returns and accepts —
-# the Title Case tables in KATA-API.md's "Controlled Vocabularies" are stale.
+# NOTE: these are kebab-case, matching what the live API returns and accepts. Any
+# Title Case "Controlled Vocabularies" table in older notes is stale — the API neither
+# returns nor accepts that form. Only cognitive-levels and skills have list endpoints;
+# the rest were confirmed against the published sibling unit (see SEND-METADATA.md).
 $ValidComponentPurpose = @('instruction','practice','both')
 $ValidContentType      = @('instruction','practice','project-or-inquiry-task','educational-game','reading-text','simulation','motivational','solved-exercise','summary')
 $ValidMediaFormat      = @('text','image','audio','video','animation','interactive-content','presentation')
@@ -359,26 +357,39 @@ function New-UnitBody {
                "'methodica-ar-math-scale-01'. The unit id must end with the unit slug, not the folder number.")
     }
 
-    # targetSector / targetAudience: validated rather than forwarded blind.
-    foreach ($v in @($Unit.targetSector)) {
+    # targetSectors / targetAudience: validated rather than forwarded blind.
+    # 720 v2.5 renamed targetSector -> targetSectors (still a list) and made
+    # targetAudience a SINGLE value. KATA's ContentUnitCreate declares exactly that.
+    foreach ($v in @($Unit.targetSectors)) {
         if ($ValidTargetSector -notcontains $v) {
-            throw "Invalid targetSector '$v' on the unit — expected one of: $($ValidTargetSector -join ', ')."
+            throw "Invalid targetSectors value '$v' on the unit — expected one of: $($ValidTargetSector -join ', ')."
         }
     }
-    foreach ($v in @($Unit.targetAudience)) {
-        if ($ValidTargetAudience -notcontains $v) {
-            throw "Invalid targetAudience '$v' on the unit — expected one of: $($ValidTargetAudience -join ', ')."
-        }
+    if ($ValidTargetAudience -notcontains $Unit.targetAudience) {
+        throw ("Invalid targetAudience '$($Unit.targetAudience)' on the unit — expected ONE of: " +
+               "$($ValidTargetAudience -join ', '). v2.5 makes this a single value, not a list.")
     }
 
+    # 720 v2.5 / KATA ContentUnitCreate. Fields deliberately NOT sent:
+    #
+    #   prerequisiteLearningObjective — dropped in v2.5; dependencies now live on the
+    #     learning objective, not on the content.
+    #   manufacture / manufacturer — KATA derives the owning provider from the API key.
+    #     The numeric `manufacturer` in the unit metadata is a 720 catalogue field with
+    #     no KATA counterpart.
+    #   subTopic — ⚠️ DO NOT SEND for a standard unit. It IS in the OpenAPI schema, which
+    #     makes it look safe, but the server enforces a rule the schema does not express:
+    #     POST returns 422 `"a standard unit must not have a subTopic"`. For a standard
+    #     unit KATA derives the subTopic from the learningObjective's classificationPath;
+    #     only a `kind: "summary"` unit — one that covers a whole subTopic and therefore
+    #     tags no single objective (720 v2.4 p.3) — carries it explicitly. Adding it here
+    #     on the strength of the schema alone cost one failed push on 03.09.26.
     return [ordered]@{
-        uniqueKey                     = $unitKey
-        title                         = [ordered]@{ $TitleLangKey = $Unit.title }
-        learningObjective             = $Unit.learningObjective
-        targetSector                  = @($Unit.targetSector)
-        targetAudience                = @($Unit.targetAudience)
-        prerequisiteLearningObjective = @($Unit.prerequisiteLearningObjective)
-        manufacture                   = $UnitManufacture
+        uniqueKey         = $unitKey
+        title             = [ordered]@{ $TitleLangKey = $Unit.title }
+        learningObjective = $Unit.learningObjective
+        targetSectors     = @($Unit.targetSectors)
+        targetAudience    = $Unit.targetAudience
     }
 }
 
@@ -405,14 +416,15 @@ function New-ComponentBody {
     if ($ov.ContainsKey('cognitiveLevel')) {
         $cog = $ov.cognitiveLevel
     } else {
-        $label = $Comp.cognitiveLevel
+        # v2.5: the metadata field is cognitiveLevelS, a list. This unit tags exactly one
+        # level per component, and KATA takes a list, so read the first and re-wrap below.
+        $label = @($Comp.cognitiveLevels)[0]
         $cog   = if ($CognitiveLevelMap.ContainsKey($label)) { $CognitiveLevelMap[$label] } else { $label }
         if ($PendingCognitiveLevel -contains $cog) {
-            throw ("cognitiveLevel '$cog' ($slug) is a 720 science level (v2.2 pp.17-18) that KATA has NOT loaded yet — " +
-                   'it would fail with 422 "cognitiveLevel code does not exist". Only 8 of the 12 science levels are ' +
-                   'available (verified 2026-07-25). Re-check GET /api/v1/cognitive-levels; once the code appears, move it ' +
-                   'from $PendingCognitiveLevel into $ValidCognitiveLevel and re-run. Meanwhile either pick a released ' +
-                   'level in the metadata, or set an override in $ComponentOverrides.')
+            throw ("cognitiveLevel '$cog' ($slug) is a 720 spec level that KATA has NOT loaded yet — it would fail " +
+                   'with 422 "cognitiveLevel code does not exist". Re-check GET /api/v1/cognitive-levels; once the ' +
+                   'code appears, move it from $PendingCognitiveLevel into $ValidCognitiveLevel and re-run. Meanwhile ' +
+                   'either pick a released level in the metadata, or set an override in $ComponentOverrides.')
         }
         if ($ValidCognitiveLevel -notcontains $cog) {
             throw ("Unknown cognitiveLevel '$label' at $slug — not one of the codes KATA holds for this subject: " +
@@ -449,7 +461,7 @@ function New-ComponentBody {
         relativeDifficulty     = [int] $relDiff
         order                  = [int] $Comp.order
         depthLevel             = $depth
-        cognitiveLevel         = $cog
+        cognitiveLevels        = @($cog)
         languages              = @($Comp.languages)
         skills                 = @($Comp.skills)
         estimatedTimeInMinutes = [int] $Comp.estimatedTimeInMinutes
@@ -509,18 +521,28 @@ Write-Log ("Base URL     : {0}" -f $BaseUrl)
 Write-Log ("Metadata dir : {0}" -f $MetadataDir)
 Write-Log ("Mode         : {0}" -f $modeLabel)
 
-# 1) Unit
-$unitFile = Get-ChildItem -Path $MetadataDir -Filter '*_unit.json' | Select-Object -First 1
-if (-not $unitFile) { Write-Log "No *_unit.json found in $MetadataDir" 'ERROR'; exit 1 }
-$unit = Get-Content -Raw -Path $unitFile.FullName -Encoding UTF8 | ConvertFrom-Json
-$unitKey = Get-Slug $unit.id
+# 1) Unit — either an existing parent unit (read-only) or this repo's own unit (upserted)
+if ($ParentUnitKey) {
+    $unitKey = $ParentUnitKey
+    Write-Log ("Parent unit  : {0} (read-only, not modified)" -f $unitKey)
+    $r = Invoke-Kata 'GET' "/api/v1/content-units/$unitKey" $null
+    $unitOk = $DryRun -or ($r.Code -eq '200')
+    if (-not $unitOk) {
+        Write-Log ("Parent unit {0} not found or not readable (HTTP {1}) — nothing sent." -f $unitKey, $r.Code) 'ERROR'
+    }
+} else {
+    $unitFile = Get-ChildItem -Path $MetadataDir -Filter '*_unit.json' | Select-Object -First 1
+    if (-not $unitFile) { Write-Log "No *_unit.json found in $MetadataDir" 'ERROR'; exit 1 }
+    $unit = Get-Content -Raw -Path $unitFile.FullName -Encoding UTF8 | ConvertFrom-Json
+    $unitKey = Get-Slug $unit.id
 
-$unitBody  = New-UnitBody $unit
-$unitPatch = Remove-Key $unitBody 'uniqueKey'
-$unitOk = Send-Entity -Label "unit $unitKey" `
-    -GetPath "/api/v1/content-units/$unitKey" `
-    -CreateMethod 'POST' -CreatePath '/api/v1/content-units' -CreateBody $unitBody `
-    -PatchPath "/api/v1/content-units/$unitKey" -PatchBody $unitPatch
+    $unitBody  = New-UnitBody $unit
+    $unitPatch = Remove-Key $unitBody 'uniqueKey'
+    $unitOk = Send-Entity -Label "unit $unitKey" `
+        -GetPath "/api/v1/content-units/$unitKey" `
+        -CreateMethod 'POST' -CreatePath '/api/v1/content-units' -CreateBody $unitBody `
+        -PatchPath "/api/v1/content-units/$unitKey" -PatchBody $unitPatch
+}
 
 if (-not $unitOk) {
     Write-Log "Unit upsert failed — skipping components (cannot nest under a missing unit)." 'ERROR'
