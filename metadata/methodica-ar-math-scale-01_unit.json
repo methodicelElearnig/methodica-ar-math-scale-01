@@ -1,25 +1,12 @@
 {
-  "id": "https://lomdot.education.gov.il/metodica/720active/math/scale/01/methodica-ar-math-scale-01/",
-  "title": "יחידות מידה לצורך יישום יחס",
+  "id": "https://lomdot.education.gov.il/metodica/720/ar/math/scale/01/methodica-ar-math-scale-01/",
+  "title": "وحدات القياس لتطبيق النسبة",
   "subTopic": "MOE.MATH.G8.NUM.RATIO-PROP-SCL.SCALE",
   "learningObjective": "MOE.MATH.G8.NUM.RATIO-PROP-SCL.SCALE.UNIT-CONV",
-  "targetSector": [
+  "targetSectors": [
     "state-general",
-    "state-religious",
-    "orthodox",
-    "arab-sector",
-    "druze-sector",
-    "bedouin-sector",
-    "special-education"
+    "state-religious"
   ],
-  "targetAudience": [
-    "general",
-    "excellent",
-    "disadvantaged-populations",
-    "new-immigrants",
-    "students-with-special-needs",
-    "students-with-language-gaps",
-    "at-risk-students"
-  ],
-  "prerequisiteLearningObjective": []
+  "targetAudience": "general",
+  "manufacturer": 310
 }

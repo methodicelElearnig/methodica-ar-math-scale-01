@@ -45,7 +45,7 @@ this one first.
 Ids are full canonical URLs under the unit's CDN prefix, e.g.
 
 ```
-https://lomdot.education.gov.il/metodica/720active/math/scale/01/
+https://lomdot.education.gov.il/metodica/720/ar/math/scale/01/
 ```
 
 | Level | Shape | Trailing slash |
