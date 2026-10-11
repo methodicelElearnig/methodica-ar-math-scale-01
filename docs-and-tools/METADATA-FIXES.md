@@ -22,7 +22,7 @@ everything else stayed byte-identical. All 6 files re-parsed clean afterwards.
 
 ```
 - "id": "https://lomdot.education.gov.il/metodica/720active/math/scale/01/"
-+ "id": "https://lomdot.education.gov.il/metodica/720active/math/scale/01/methodica-ar-math-scale-01/"
++ "id": "https://lomdot.education.gov.il/metodica/720/ar/math/scale/01/methodica-ar-math-scale-01/"
 ```
 
 **Why.** Kata derives `uniqueKey` from the last path segment of the id. The original id stopped at

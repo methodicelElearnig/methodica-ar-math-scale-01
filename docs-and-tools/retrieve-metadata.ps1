@@ -25,9 +25,10 @@
     providerLogoUrl, componentCount, per-item/per-question order) are dropped — use
     -KeepRaw to also save the untouched API response.
 
-    masteryLevel IS emitted when KATA returns one: this unit's metadata carries it per
-    component and send-metadata.ps1 pushes it, so dropping it here would make a
-    retrieve -> overwrite cycle silently lose the value.
+    masteryLevel IS emitted whenever KATA returns one. send-metadata.ps1 pushes the value
+    when a component carries it, so dropping it here would make a retrieve -> overwrite
+    cycle silently lose it. (In this unit all six components have masteryLevel: null, so
+    nothing is emitted in practice — the handling matters for units that do set it.)
 
     Runtime: PowerShell 7+ and curl.exe (bundled with Windows 10/11).
 
@@ -46,7 +47,8 @@
     Override the API base URL (default https://kata.cet.ac.il).
 
 .PARAMETER OutDir
-    Override the output folder (default: metadata-from/ next to this script).
+    Override the output folder (default: metadata-from/ at the repo root, alongside
+    metadata/ — this script lives in docs-and-tools/).
 
 .PARAMETER IdBase
     URL prefix used to rebuild the `id` URLs when KATA carries no hostedContentRef
@@ -58,7 +60,7 @@
 .EXAMPLE
     pwsh -File retrieve-metadata.ps1
 .EXAMPLE
-    pwsh -File retrieve-metadata.ps1 -UnitKey methodica-ar-math-scale-01 -KeepRaw
+    pwsh -File retrieve-metadata.ps1 -UnitKey methodica-math-scale-01 -KeepRaw
 #>
 [CmdletBinding()]
 param(
@@ -87,28 +89,27 @@ param(
 # NEVER hard-code it here — this script is committed. It is resolved at runtime, in
 # order, from: the -ApiKey parameter, the KATA_API_KEY environment variable, or the
 # git-ignored key file below (one line, just the key). Shared with send-metadata.ps1.
-# Repo root is one level up: this script lives in docs-and-tools/, while the
-# key file, metadata/, metadata-from/, and the log all stay at the repo root.
-$RepoRoot = Split-Path $PSScriptRoot -Parent
-$ApiKeyFile = Join-Path $RepoRoot 'kata-api-key.txt'
+$ApiKeyFile = Join-Path $PSScriptRoot 'kata-api-key.txt'
 # API base URL (override at launch with -BaseUrl).
 if (-not $BaseUrl) { $BaseUrl = 'https://kata.cet.ac.il' }
-# Where the retrieved metadata files go (override with -OutDir).
-if (-not $OutDir)  { $OutDir  = Join-Path $RepoRoot 'metadata-from' }
-# Run log (git-ignored via *.log).
-$LogFile = Join-Path $RepoRoot 'retrieve-metadata.log'
+# Where the retrieved metadata files go (override with -OutDir). This script lives in
+# docs-and-tools/, so the default sits one level up, next to metadata/ — that keeps the
+# documented `git diff --no-index metadata metadata-from` working from the repo root.
+if (-not $OutDir)  { $OutDir  = Join-Path $PSScriptRoot '..\metadata-from' }
+# Run log (git-ignored by name).
+$LogFile = Join-Path $PSScriptRoot 'retrieve-metadata.log'
 
 # ── (2) PER-UNIT — usually fine as-is ───────────────────────────────────────
 # Which language to unwrap the unit's title object with:
 #   { "Hebrew": "מדידת מסה" } -> "מדידת מסה".
-$TitleLangKey = 'Hebrew'
+$TitleLangKey = 'Arabic'   # Arabic unit
 # Value written to each component's `manufacture`. KATA returns the provider's
 # display name ("מתודיקה"); the metadata files use the slug. Set to $null to pass
 # KATA's own value through instead.
 $Manufacture = 'methodica'
 # Fallback URL prefix for rebuilding `id` fields, used ONLY when no component
 # carries a hostedContentRef to derive the real prefix from (override with -IdBase).
-if (-not $IdBase) { $IdBase = 'https://lomdot.education.gov.il/metodica/720active/math/scale/01' }
+if (-not $IdBase) { $IdBase = 'https://lomdot.education.gov.il/metodica/720/ar/math/scale/01' }   # Arabic unit
 
 # ── (3) OUTPUT FORMATTING — mirrors the hand-authored style of metadata/ ─────
 # An empty array is always `[]`. A non-empty array of primitives goes on one line
@@ -455,7 +456,7 @@ Write-Log ("Output dir : {0}" -f $OutDir)
 # 1) Which unit? Parameter, else the local metadata folder, else ask the catalog.
 if ($UnitKey) { Write-Log ("Unit key   : {0} (-UnitKey)" -f $UnitKey) }
 if (-not $UnitKey) {
-    $localUnit = Get-ChildItem -Path (Join-Path $RepoRoot 'metadata') -Filter '*_unit.json' -ErrorAction SilentlyContinue |
+    $localUnit = Get-ChildItem -Path (Join-Path $PSScriptRoot '..\metadata') -Filter '*_unit.json' -ErrorAction SilentlyContinue |
         Select-Object -First 1
     if ($localUnit) {
         $UnitKey = Get-Slug ((Get-Content -Raw -Path $localUnit.FullName -Encoding UTF8 | ConvertFrom-Json).id)

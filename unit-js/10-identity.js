@@ -4,7 +4,7 @@
 
    Canonical id prefix for this unit. Every id the lomda reports is built from it and must match
    metadata/*.json byte-for-byte, INCLUDING the trailing slashes that convention carries. */
-var XAPI_ID_PREFIX = 'https://lomdot.education.gov.il/metodica/720active/math/scale/01/';
+var XAPI_ID_PREFIX = 'https://lomdot.education.gov.il/metodica/720/ar/math/scale/01/';
 
 /* The unit id is the prefix PLUS the unit slug — it must equal metadata unit id exactly.
    (The prefix alone is only the folder; keying the unit on that resolved to "01".) */
