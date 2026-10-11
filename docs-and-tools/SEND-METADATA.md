@@ -33,7 +33,10 @@ So the script runs in **parent-unit mode** by default: `$ParentUnitKey =
   `LINKED` line for `-02`'s `recommendedAfterFail` → `-01`), one read-only `GET` on the parent unit.
 - Before any re-send, retrieve the **mixed** unit with the Hebrew key
   (`retrieve-metadata.ps1 -UnitKey methodica-math-scale-01 -KeepRaw -OutDir …`).
-- Send record and snapshots, once sent: `../../deployments/!kata-snapshots/KATA-SEND-<date>.md`.
+- **Sent 11.10.26** from `e006d8d`: dry run and live `created=26 updated=1 failed=0`, re-send
+  `created=0 updated=27 failed=0`. The Hebrew records were byte-identical before and after (only
+  `componentCount` 5 → 10). The 5 Arabic components are `draft`, all 53 ids equal the repo's.
+  Record and snapshots: `../../deployments/!kata-snapshots/KATA-SEND-2026-10-11.md`.
 
 ## Requirements
 
