@@ -547,7 +547,7 @@ function s29Enter() {
   s29Solved   = false;
   s29Correct  = false;
   var input = document.getElementById('s29-answer-input');
-  if (input) { input.value = ''; input.disabled = false; }
+  if (input) { input.value = ''; input.disabled = false; input.classList.remove('is-incorrect'); }
   var cont = document.getElementById('s29-continue');
   if (cont) cont.disabled = true;
   var hint = document.getElementById('s29-hint-popup');
@@ -621,6 +621,8 @@ function s29Submit() {
   } else {
     s29Solved = true;
     input.disabled  = true;
+    input.value     = '4';   /* reveal the correct answer, like the dropdown items (s26Submit) */
+    input.classList.add('is-incorrect');
     fbBold.textContent = 'الإجابة غير دقيقة، لكن كل الاحترام على المحاولة!​';
     announce('الإجابة غير دقيقة، لكن كل الاحترام على المحاولة!​');
     fbReg.innerHTML    = explanation;
@@ -861,7 +863,7 @@ function s32Enter() {
   s32Correct  = false;
   s32Attempts = 0;
   var input = document.getElementById('s32-answer-input');
-  if (input) { input.value = ''; input.disabled = false; }
+  if (input) { input.value = ''; input.disabled = false; input.classList.remove('is-incorrect'); }
   var fb = document.getElementById('s32-feedback');
   if (fb) { fb.hidden = true; fb.className = 's5-inline-feedback s18-feedback-bar'; }
   document.getElementById('s32-fb-bold').textContent    = '';
@@ -939,7 +941,10 @@ function s32Submit() {
     } else {
       // Second wrong — explanation + lock
       s32Solved = true;
-      document.getElementById('s32-answer-input').disabled = true;
+      var input = document.getElementById('s32-answer-input');
+      input.disabled = true;
+      input.value    = '25';   /* reveal the correct answer, like the dropdown items (s26Submit) */
+      input.classList.add('is-incorrect');
       fbBold.textContent  = 'هذا خطأ، لكن لدينا فرصة للتعلم:​';
       announce('هذا خطأ، لكن لدينا فرصة للتعلم:​');
       fbReg.innerHTML     = explanationWrong;
@@ -1495,7 +1500,11 @@ function restoreValueScreenUI(cfg) {
   if (!fb || !fbBold || !fbReg || !cont) return;
 
   if (cfg.solved) {
-    if (input) input.disabled = true;
+    if (input) {
+      input.disabled = true;
+      /* The resume layer wrote the learner's saved (wrong) value back - show the revealed answer. */
+      if (!cfg.correct) { input.value = cfg.answer; input.classList.add('is-incorrect'); }
+    }
     fbBold.textContent = cfg.correct ? cfg.boldCorrect : cfg.boldWrong;
     fbReg.innerHTML    = cfg.correct ? cfg.explanationOk : cfg.explanationErr;
     fb.classList.add(cfg.correct ? 's5-fb--correct' : 's5-fb--incorrect');
@@ -1521,7 +1530,7 @@ function restoreValueScreenUI(cfg) {
 
 function s29RestoreUI() {
   restoreValueScreenUI({
-    prefix: 's29', solved: s29Solved, correct: s29Correct, attempts: s29Attempts,
+    prefix: 's29', solved: s29Solved, correct: s29Correct, attempts: s29Attempts, answer: '4',
     boldCorrect: 'ممتاز! ​', boldWrong: 'الإجابة غير دقيقة، لكن كل الاحترام على المحاولة!​',
     explanationOk: S29_RESTORE_EXPLANATION, explanationErr: S29_RESTORE_EXPLANATION,
     revealHint: false
@@ -1531,7 +1540,7 @@ function s29RestoreUI() {
 
 function s32RestoreUI() {
   restoreValueScreenUI({
-    prefix: 's32', solved: s32Solved, correct: s32Correct, attempts: s32Attempts,
+    prefix: 's32', solved: s32Solved, correct: s32Correct, attempts: s32Attempts, answer: '25',
     boldCorrect: 'كل الاحترام! ​', boldWrong: 'هذا خطأ، لكن لدينا فرصة للتعلم:​',
     explanationOk: S32_RESTORE_EXPLANATION_OK, explanationErr: S32_RESTORE_EXPLANATION_ERR,
     revealHint: true,
