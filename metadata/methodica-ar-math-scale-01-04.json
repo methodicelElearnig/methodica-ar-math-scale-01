@@ -40,7 +40,16 @@
           ],
           "correctAnswers": [
             "3,000 : 1"
-          ]
+          ],
+          "xapiInteractionComponents": {
+            "choices": [
+              {"id": "30 : 1", "description": "30 : 1"},
+              {"id": "300 : 1", "description": "300 : 1"},
+              {"id": "3,000 : 1", "description": "3,000 : 1"},
+              {"id": "30,000 : 1", "description": "30,000 : 1"}
+            ]
+          },
+          "correctXapiResponsesPattern": ["3,000 : 1"]
         }
       ]
     },
@@ -63,7 +72,16 @@
           ],
           "correctAnswers": [
             "50 : 1"
-          ]
+          ],
+          "xapiInteractionComponents": {
+            "choices": [
+              {"id": "50 : 1", "description": "50 : 1"},
+              {"id": "100 : 1", "description": "100 : 1"},
+              {"id": "500 : 1", "description": "500 : 1"},
+              {"id": "1,800 : 1", "description": "1,800 : 1"}
+            ]
+          },
+          "correctXapiResponsesPattern": ["50 : 1"]
         },
         {
           "questionId": "https://lomdot.education.gov.il/metodica/720/ar/math/scale/01/methodica-ar-math-scale-01-04/methodica-ar-math-scale-01-04-002/q2",
@@ -103,6 +121,26 @@
               "source": "الارتفاع في صورة وليد (مقياس الرسم 50 : 1)",
               "target": "12"
             }
+          ],
+          "xapiInteractionComponents": {
+            "source": [
+              {"id": "الطول في صورة ميار (مقياس الرسم 20 : 1)", "description": "الطول في صورة ميار (مقياس الرسم 20 : 1)"},
+              {"id": "الارتفاع في صورة ميار (مقياس الرسم 20 : 1)", "description": "الارتفاع في صورة ميار (مقياس الرسم 20 : 1)"},
+              {"id": "الطول في صورة وليد (مقياس الرسم 50 : 1)", "description": "الطول في صورة وليد (مقياس الرسم 50 : 1)"},
+              {"id": "الارتفاع في صورة وليد (مقياس الرسم 50 : 1)", "description": "الارتفاع في صورة وليد (مقياس الرسم 50 : 1)"}
+            ],
+            "target": [
+              {"id": "6", "description": "6"},
+              {"id": "12", "description": "12"},
+              {"id": "15", "description": "15"},
+              {"id": "24", "description": "24"},
+              {"id": "30", "description": "30"},
+              {"id": "48", "description": "48"},
+              {"id": "60", "description": "60"}
+            ]
+          },
+          "correctXapiResponsesPattern": [
+            "الطول في صورة ميار (مقياس الرسم 20 : 1)[.]60[,]الارتفاع في صورة ميار (مقياس الرسم 20 : 1)[.]30[,]الطول في صورة وليد (مقياس الرسم 50 : 1)[.]24[,]الارتفاع في صورة وليد (مقياس الرسم 50 : 1)[.]12"
           ]
         }
       ]
@@ -121,7 +159,9 @@
           "answers": [],
           "correctAnswers": [
             6
-          ]
+          ],
+          "xapiInteractionComponents": null,
+          "correctXapiResponsesPattern": ["6"]
         },
         {
           "questionId": "https://lomdot.education.gov.il/metodica/720/ar/math/scale/01/methodica-ar-math-scale-01-04/methodica-ar-math-scale-01-04-003/q2",
@@ -135,7 +175,16 @@
           ],
           "correctAnswers": [
             "256 مترًا مربعًا"
-          ]
+          ],
+          "xapiInteractionComponents": {
+            "choices": [
+              {"id": "32 مترًا مربعًا", "description": "32 مترًا مربعًا"},
+              {"id": "64 مترًا مربعًا", "description": "64 مترًا مربعًا"},
+              {"id": "128 مترًا مربعًا", "description": "128 مترًا مربعًا"},
+              {"id": "256 مترًا مربعًا", "description": "256 مترًا مربعًا"}
+            ]
+          },
+          "correctXapiResponsesPattern": ["256 مترًا مربعًا"]
         }
       ]
     }
