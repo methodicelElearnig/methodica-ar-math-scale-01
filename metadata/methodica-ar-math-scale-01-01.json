@@ -54,7 +54,14 @@
           ],
           "correctAnswers": [
             "الطول في الواقع"
-          ]
+          ],
+          "xapiInteractionComponents": {
+            "choices": [
+              {"id": "الطول في الواقع", "description": "الطول في الواقع"},
+              {"id": "الطول في الصورة", "description": "الطول في الصورة"}
+            ]
+          },
+          "correctXapiResponsesPattern": ["الطول في الواقع"]
         },
         {
           "questionId": "https://lomdot.education.gov.il/metodica/720/ar/math/scale/01/methodica-ar-math-scale-01-01/methodica-ar-math-scale-01-01-003/q2",
@@ -78,6 +85,17 @@
               "stepId": "في 7 كيلومتر يوجد __ سم",
               "response": "700,000"
             }
+          ],
+          "xapiInteractionComponents": {
+            "steps": [
+              {"id": "في 3 كيلومتر يوجد __ متر", "description": null},
+              {"id": "في 17 مترًا يوجد __ سم", "description": null},
+              {"id": "في 32 سم يوجد __ ملم", "description": null},
+              {"id": "في 7 كيلومتر يوجد __ سم", "description": null}
+            ]
+          },
+          "correctXapiResponsesPattern": [
+            "في 3 كيلومتر يوجد __ متر[.]3,000[,]في 17 مترًا يوجد __ سم[.]1,700[,]في 32 سم يوجد __ ملم[.]320[,]في 7 كيلومتر يوجد __ سم[.]700,000"
           ]
         }
       ]
@@ -99,7 +117,14 @@
           ],
           "correctAnswers": [
             "الطول في الواقع"
-          ]
+          ],
+          "xapiInteractionComponents": {
+            "choices": [
+              {"id": "الطول في الواقع", "description": "الطول في الواقع"},
+              {"id": "الطول في الصورة", "description": "الطول في الصورة"}
+            ]
+          },
+          "correctXapiResponsesPattern": ["الطول في الواقع"]
         },
         {
           "questionId": "https://lomdot.education.gov.il/metodica/720/ar/math/scale/01/methodica-ar-math-scale-01-01/methodica-ar-math-scale-01-01-004/q2",
@@ -123,6 +148,17 @@
               "stepId": "في 7 كيلومتر يوجد __ سم",
               "response": "700,000"
             }
+          ],
+          "xapiInteractionComponents": {
+            "steps": [
+              {"id": "في 3 كيلومتر يوجد __ متر", "description": null},
+              {"id": "في 17 مترًا يوجد __ سم", "description": null},
+              {"id": "في 32 سم يوجد __ ملم", "description": null},
+              {"id": "في 7 كيلومتر يوجد __ سم", "description": null}
+            ]
+          },
+          "correctXapiResponsesPattern": [
+            "في 3 كيلومتر يوجد __ متر[.]3,000[,]في 17 مترًا يوجد __ سم[.]1,700[,]في 32 سم يوجد __ ملم[.]320[,]في 7 كيلومتر يوجد __ سم[.]700,000"
           ]
         }
       ]
@@ -152,7 +188,9 @@
           ],
           "correctAnswers": [
             "true"
-          ]
+          ],
+          "xapiInteractionComponents": null,
+          "correctXapiResponsesPattern": ["true"]
         }
       ]
     },
@@ -170,7 +208,9 @@
           "answers": [],
           "correctAnswers": [
             24
-          ]
+          ],
+          "xapiInteractionComponents": null,
+          "correctXapiResponsesPattern": ["24"]
         }
       ]
     },
@@ -188,7 +228,9 @@
           "answers": [],
           "correctAnswers": [
             20
-          ]
+          ],
+          "xapiInteractionComponents": null,
+          "correctXapiResponsesPattern": ["20"]
         },
         {
           "questionId": "https://lomdot.education.gov.il/metodica/720/ar/math/scale/01/methodica-ar-math-scale-01-01/methodica-ar-math-scale-01-01-008/q2",
@@ -202,7 +244,16 @@
           ],
           "correctAnswers": [
             "العرض 9 سم، الطول 12 سم"
-          ]
+          ],
+          "xapiInteractionComponents": {
+            "choices": [
+              {"id": "العرض 4.5 سم، الطول 6 سم", "description": "العرض 4.5 سم، الطول 6 سم"},
+              {"id": "العرض 9 سم، الطول 12 سم", "description": "العرض 9 سم، الطول 12 سم"},
+              {"id": "العرض 18 سم، الطول 24 سم", "description": "العرض 18 سم، الطول 24 سم"},
+              {"id": "العرض 36 سم، الطول 48 سم", "description": "العرض 36 سم، الطول 48 سم"}
+            ]
+          },
+          "correctXapiResponsesPattern": ["العرض 9 سم، الطول 12 سم"]
         }
       ]
     },
@@ -223,7 +274,9 @@
             "25,000:1",
             "25000 : 1",
             "25000:1"
-          ]
+          ],
+          "xapiInteractionComponents": null,
+          "correctXapiResponsesPattern": ["25,000 : 1", "25,000:1", "25000 : 1", "25000:1"]
         }
       ]
     },
@@ -246,7 +299,16 @@
           ],
           "correctAnswers": [
             "7,000 كيلومتر"
-          ]
+          ],
+          "xapiInteractionComponents": {
+            "choices": [
+              {"id": "700 كيلومتر", "description": "700 كيلومتر"},
+              {"id": "7,000 كيلومتر", "description": "7,000 كيلومتر"},
+              {"id": "70,000 كيلومتر", "description": "70,000 كيلومتر"},
+              {"id": "700,000 كيلومتر", "description": "700,000 كيلومتر"}
+            ]
+          },
+          "correctXapiResponsesPattern": ["7,000 كيلومتر"]
         }
       ]
     },
@@ -268,7 +330,21 @@
           ],
           "correctAnswers": [
             "لا. بما أن طولَيّ المسارين في الخريطتين مختلفان، فإن مقاييس الرسم مختلفة بالضرورة"
-          ]
+          ],
+          "xapiInteractionComponents": {
+            "choices": [
+              {
+                "id": "نعم. بما أن كلتيهما صوّرتَا نفس مسار الرحلة بالضبط في الواقع، يجب أن يكون مقياس الرسم متطابقًا",
+                "description": "نعم. بما أن كلتيهما صوّرتَا نفس مسار الرحلة بالضبط في الواقع، يجب أن يكون مقياس الرسم متطابقًا"
+              },
+              {
+                "id": "لا. في خريطة الطائرة المسيّرة ب، أضافوا 5 سم إضافية لمسار الرحلة، ولذلك فإن المسافة في الواقع تغيّرت",
+                "description": "لا. في خريطة الطائرة المسيّرة ب، أضافوا 5 سم إضافية لمسار الرحلة، ولذلك فإن المسافة في الواقع تغيّرت"
+              },
+              {"id": "لا. بما أن طولَيّ المسارين في الخريطتين مختلفان، فإن مقاييس الرسم مختلفة بالضرورة", "description": "لا. بما أن طولَيّ المسارين في الخريطتين مختلفان، فإن مقاييس الرسم مختلفة بالضرورة"}
+            ]
+          },
+          "correctXapiResponsesPattern": ["لا. بما أن طولَيّ المسارين في الخريطتين مختلفان، فإن مقاييس الرسم مختلفة بالضرورة"]
         }
       ]
     }
