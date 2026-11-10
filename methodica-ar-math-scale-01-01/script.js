@@ -1790,9 +1790,12 @@ function s16Submit() {
   feedback.classList.add(correct ? 's5-fb--correct' : 's5-fb--incorrect');
   feedback.hidden = false;
 
-  /* xAPI: item 006 / q1 (004 before the 2026-10-27 split) — the true/false warm-up. Single attempt. */
+  /* xAPI: item 006 / q1 (004 before the 2026-10-27 split) — the true/false warm-up. Single attempt.
+     Reports 'true' / 'false', never the button label: Kata compares result.response with the
+     question's correctXapiResponsesPattern, so "صحيح" / "غير صحيح" could never be scored
+     (guide §6.3b, 2026-11-10). Option 0 is "صحيح". */
   xapiAnswered('006', 'q1', correct, true,
-    xapiAnswerText(opts[s16Selected]));
+    s16Selected === 0 ? 'true' : 'false');
 
   var contBtn = document.getElementById('s16-continue');
   if (contBtn) {
