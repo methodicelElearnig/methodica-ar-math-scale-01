@@ -30,7 +30,7 @@ let s4XapiPlaying = false;
 let s4YTPlayer = null;
 let s4PlayerReady = false;
 
-var S4_YT_VIDEO_ID = 'kZ3Kzjjr4X0';
+var S4_YT_VIDEO_ID = 'Bk9KunjWSiA';
 
 /* ── The embed src, built HERE and never by the API ──────────────────────────────────
    ⚠️ NEVER hand window.location.href to YouTube. The launch URL carries the slxapi
